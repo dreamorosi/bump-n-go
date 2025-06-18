@@ -1,0 +1,27 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"target": "es2022",
+		"moduleDetection": "force",
+		"isolatedModules": true,
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"moduleResolution": "NodeNext",
+		"module": "NodeNext",
+		"outDir": "lib",
+		"sourceMap": true,
+		// "inlineSourceMap": true,
+		"declaration": true,
+		"declarationMap": true,
+		"removeComments": false,
+		"pretty": true,
+		"baseUrl": ".",
+		"rootDir": "./src",
+		"lib": ["ES2022"]
+	},
+	"include": ["src/**/*"],
+	"exclude": ["./node_modules"],
+	"types": ["node"]
+}
