@@ -21,11 +21,11 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.ref }}
-          fetch-depth: 0 # fetch all history, commits and tags, lerna scans it to the last tag and looks at commits, we need all of it to determine the next version
+          fetch-depth: 0 # fetch all history, commits and tags, we scan it to the last tag and look at commits, we need all of it to determine the next version
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: "22"
+          node-version: "24"
           cache: "npm"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
