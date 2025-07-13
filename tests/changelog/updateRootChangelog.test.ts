@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { updateRootChangelog } from '../../src/changelog.js';
 
 const mocks = vi.hoisted(() => ({
@@ -38,8 +38,13 @@ it('creates new changelog when file does not exist', () => {
 	updateRootChangelog(changelogPath, version, versionLink, sections);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- **package-a** Add new feature\n\n\n';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith(changelogPath, expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- **package-a** Add new feature\n\n\n';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		changelogPath,
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('prepends new version to existing changelog', () => {
@@ -48,7 +53,8 @@ it('prepends new version to existing changelog', () => {
 	const version = '2.0.0';
 	const versionLink = 'https://github.com/user/repo/releases/tag/v2.0.0';
 	const sections = '### Features\n\n- **package-b** Add breaking change\n';
-	const existingContent = '# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-01-01)\n\n### Features\n\n- Initial release\n';
+	const existingContent =
+		'# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-01-01)\n\n### Features\n\n- Initial release\n';
 
 	mocks.statSync.mockReturnValue({ isFile: () => true });
 	mocks.readFileSync.mockReturnValue(existingContent);
@@ -57,8 +63,13 @@ it('prepends new version to existing changelog', () => {
 	updateRootChangelog(changelogPath, version, versionLink, sections);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [2.0.0](https://github.com/user/repo/releases/tag/v2.0.0) (2024-03-15)\n\n### Features\n\n- **package-b** Add breaking change\n\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-01-01)\n\n### Features\n\n- Initial release\n';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith(changelogPath, expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [2.0.0](https://github.com/user/repo/releases/tag/v2.0.0) (2024-03-15)\n\n### Features\n\n- **package-b** Add breaking change\n\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-01-01)\n\n### Features\n\n- Initial release\n';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		changelogPath,
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('preserves existing header format', () => {
@@ -67,7 +78,8 @@ it('preserves existing header format', () => {
 	const version = '1.1.0';
 	const versionLink = 'https://github.com/user/repo/releases/tag/v1.1.0';
 	const sections = '### Features\n\n- **package-c** Add feature\n';
-	const existingContent = '# Change Log\n\n## Version 1.0.0\n\n- Previous version';
+	const existingContent =
+		'# Change Log\n\n## Version 1.0.0\n\n- Previous version';
 
 	mocks.statSync.mockReturnValue({ isFile: () => true });
 	mocks.readFileSync.mockReturnValue(existingContent);
@@ -76,8 +88,13 @@ it('preserves existing header format', () => {
 	updateRootChangelog(changelogPath, version, versionLink, sections);
 
 	// Assess
-	const expectedContent = '# Change Log\n\n## [1.1.0](https://github.com/user/repo/releases/tag/v1.1.0) (2024-03-15)\n\n### Features\n\n- **package-c** Add feature\n\n\n## Version 1.0.0\n\n- Previous version';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith(changelogPath, expectedContent, 'utf-8');
+	const expectedContent =
+		'# Change Log\n\n## [1.1.0](https://github.com/user/repo/releases/tag/v1.1.0) (2024-03-15)\n\n### Features\n\n- **package-c** Add feature\n\n\n## Version 1.0.0\n\n- Previous version';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		changelogPath,
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('handles empty sections', () => {
@@ -95,8 +112,13 @@ it('handles empty sections', () => {
 	updateRootChangelog(changelogPath, version, versionLink, sections);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.0.1](https://github.com/user/repo/releases/tag/v1.0.1) (2024-03-15)\n\n\n\n';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith(changelogPath, expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.0.1](https://github.com/user/repo/releases/tag/v1.0.1) (2024-03-15)\n\n\n\n';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		changelogPath,
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('handles file that exists but is not readable', () => {
@@ -115,8 +137,13 @@ it('handles file that exists but is not readable', () => {
 	updateRootChangelog(changelogPath, version, versionLink, sections);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- **package-a** Add feature\n\n\n';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith(changelogPath, expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- **package-a** Add feature\n\n\n';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		changelogPath,
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('handles changelog without existing header', () => {
@@ -125,7 +152,8 @@ it('handles changelog without existing header', () => {
 	const version = '1.0.0';
 	const versionLink = 'https://github.com/user/repo/releases/tag/v1.0.0';
 	const sections = '### Features\n\n- **package-a** Add feature\n';
-	const existingContent = '## Version 0.9.0\n\n- Previous content without main header';
+	const existingContent =
+		'## Version 0.9.0\n\n- Previous content without main header';
 
 	mocks.statSync.mockReturnValue({ isFile: () => true });
 	mocks.readFileSync.mockReturnValue(existingContent);
@@ -134,6 +162,11 @@ it('handles changelog without existing header', () => {
 	updateRootChangelog(changelogPath, version, versionLink, sections);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- **package-a** Add feature\n\n\n## Version 0.9.0\n\n- Previous content without main header';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith(changelogPath, expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- **package-a** Add feature\n\n\n## Version 0.9.0\n\n- Previous content without main header';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		changelogPath,
+		expectedContent,
+		'utf-8'
+	);
 });

@@ -1,6 +1,6 @@
-import { it, expect, beforeEach, vi } from 'vitest';
-import { bumpVersions } from '../../src/version.js';
+import { beforeEach, expect, it, vi } from 'vitest';
 import type { Workspace } from '../../src/types.js';
+import { bumpVersions } from '../../src/version.js';
 
 const mocks = vi.hoisted(() => ({
 	existsSync: vi.fn(),
@@ -112,7 +112,7 @@ it('updates package-lock.json after updating workspace packages', () => {
 		'{\n\t"name": "package-a",\n\t"version": "2.0.0"\n}\n',
 		'utf-8'
 	);
-	
+
 	const expectedLockfile = {
 		name: 'root',
 		packages: {
@@ -149,9 +149,9 @@ it('handles mixed workspace scenarios with private packages', () => {
 		dependencyNames: [],
 		isPrivate: true,
 	};
-	const workspaces = { 
-		'public-package': publicWorkspace, 
-		'private-package': privateWorkspace 
+	const workspaces = {
+		'public-package': publicWorkspace,
+		'private-package': privateWorkspace,
 	};
 
 	mocks.join
@@ -161,7 +161,9 @@ it('handles mixed workspace scenarios with private packages', () => {
 	mocks.existsSync.mockReturnValue(true);
 	mocks.readFileSync
 		.mockReturnValueOnce('{"name":"public-package","version":"1.0.0"}')
-		.mockReturnValueOnce('{"name":"private-package","version":"1.0.0","private":true}')
+		.mockReturnValueOnce(
+			'{"name":"private-package","version":"1.0.0","private":true}'
+		)
 		.mockReturnValueOnce('{"name":"root","packages":{}}');
 
 	// Act

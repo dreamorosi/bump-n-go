@@ -8,6 +8,28 @@ import type {
 	Workspace,
 } from './types.js';
 
+/**
+ * Converts commit subjects to include clickable links for issues and commits.
+ *
+ * Transforms GitHub issue references (#123) into clickable links and appends
+ * commit hash links when available. Enhances changelog readability by providing
+ * direct navigation to related issues and commits.
+ *
+ * @param subject - the commit subject line to process
+ * @param baseUrl - the base repository URL for generating links
+ * @param commitHash - optional commit hash to include as a link
+ * @returns the subject with embedded markdown links
+ *
+ * @example
+ * ```typescript
+ * linkifyCommitReferences(
+ *   "fix: resolve issue #123",
+ *   "https://github.com/user/repo",
+ *   "abc1234"
+ * );
+ * // Returns: "fix: resolve issue [#123](https://github.com/user/repo/issues/123) ([abc1234](https://github.com/user/repo/commit/abc1234))"
+ * ```
+ */
 const linkifyCommitReferences = (
 	subject: string,
 	baseUrl: string,
@@ -29,6 +51,17 @@ const linkifyCommitReferences = (
 	return result;
 };
 
+/**
+ * Generates changelog sections from workspace commits.
+ *
+ * Processes all workspace commits to create structured changelog content
+ * organized by commit type. Generates both main changelog sections (excluding
+ * private packages) and workspace-specific sections (including all packages).
+ *
+ * @param workspaces - record of all workspaces with their commits
+ * @param baseUrl - the base repository URL for generating commit links
+ * @returns object containing main and workspace-specific changelog sections
+ */
 const generateChangelogSections = (
 	workspaces: Record<string, Workspace>,
 	baseUrl: string
@@ -86,6 +119,16 @@ const generateChangelogSections = (
 	};
 };
 
+/**
+ * Extracts the existing changelog header from a changelog file.
+ *
+ * Parses an existing CHANGELOG.md file to preserve the header format
+ * and styling. Falls back to a default header if the file doesn't exist
+ * or doesn't contain a recognizable header.
+ *
+ * @param changelogPath - path to the changelog file
+ * @returns the extracted or default changelog header
+ */
 const parseExistingChangelogHeader = (changelogPath: string): string => {
 	let existingChangelog = '';
 	try {
@@ -99,6 +142,22 @@ const parseExistingChangelogHeader = (changelogPath: string): string => {
 	return headerMatch ? headerMatch[0] : '# Changelog\n\n';
 };
 
+/**
+ * Generates a version header for changelog entries.
+ *
+ * Creates a standardized version header with the current date and a link
+ * to the version comparison or release page.
+ *
+ * @param version - the version number
+ * @param versionLink - the URL linking to the version comparison or release
+ * @returns formatted version header with date
+ *
+ * @example
+ * ```typescript
+ * generateVersionHeader("2.1.0", "https://github.com/user/repo/compare/v2.0.0...v2.1.0");
+ * // Returns: "## [2.1.0](https://github.com/user/repo/compare/v2.0.0...v2.1.0) (2024-01-15)\n\n"
+ * ```
+ */
 const generateVersionHeader = (
 	version: string,
 	versionLink: string
@@ -109,6 +168,18 @@ const generateVersionHeader = (
 	return `## [${version}](${versionLink}) (${year}-${month}-${day})\n\n`;
 };
 
+/**
+ * Updates the root changelog file with new version information.
+ *
+ * Prepends new changelog content to the existing root CHANGELOG.md file,
+ * preserving the existing header and content while adding the new version
+ * at the top.
+ *
+ * @param changelogPath - path to the root changelog file
+ * @param version - the version number
+ * @param versionLink - the URL linking to the version comparison
+ * @param sections - the formatted changelog sections content
+ */
 const updateRootChangelog = (
 	changelogPath: string,
 	version: string,
@@ -132,6 +203,18 @@ const updateRootChangelog = (
 	writeFileSync(changelogPath, changelogContent, 'utf-8');
 };
 
+/**
+ * Updates a workspace-specific changelog file.
+ *
+ * Updates the CHANGELOG.md file within a workspace directory with either
+ * specific changes for that workspace or a version bump notification.
+ * Only processes workspaces that have existing changelog files.
+ *
+ * @param workspacePath - path to the workspace directory
+ * @param version - the version number
+ * @param versionLink - the URL linking to the version comparison
+ * @param workspaceSections - optional sections specific to this workspace
+ */
 const updateWorkspaceChangelog = (
 	workspacePath: string,
 	version: string,
@@ -167,6 +250,31 @@ const updateWorkspaceChangelog = (
 	writeFileSync(changelogPath, changelogContent, 'utf-8');
 };
 
+/**
+ * Updates all changelog files in the repository.
+ *
+ * Orchestrates the changelog update process by generating sections from
+ * workspace commits and updating both the root changelog and all
+ * workspace-specific changelog files. Works for both monorepos and
+ * single-package repositories.
+ *
+ * @param rootPath - the root path of the repository
+ * @param workspaces - record of all workspaces with their commits
+ * @param version - the new version number
+ * @param versionLink - the URL linking to the version comparison
+ * @param baseUrl - the base repository URL for generating links
+ *
+ * @example
+ * ```typescript
+ * updateChangelogs(
+ *   '/path/to/repo',
+ *   workspaces,
+ *   '2.1.0',
+ *   'https://github.com/user/repo/compare/v2.0.0...v2.1.0',
+ *   'https://github.com/user/repo'
+ * );
+ * ```
+ */
 const updateChangelogs = (
 	rootPath: string,
 	workspaces: Record<string, Workspace>,
@@ -195,12 +303,12 @@ const updateChangelogs = (
 	}
 };
 
-export { 
-	updateChangelogs, 
-	linkifyCommitReferences, 
-	generateChangelogSections, 
-	parseExistingChangelogHeader, 
+export {
+	updateChangelogs,
+	linkifyCommitReferences,
+	generateChangelogSections,
+	parseExistingChangelogHeader,
 	generateVersionHeader,
 	updateRootChangelog,
-	updateWorkspaceChangelog
+	updateWorkspaceChangelog,
 };

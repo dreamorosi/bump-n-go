@@ -1,4 +1,4 @@
-import { it, expect } from 'vitest';
+import { expect, it } from 'vitest';
 import { generateChangelogSections } from '../../src/changelog.js';
 import type { Workspace } from '../../src/types.js';
 
@@ -10,14 +10,16 @@ it('generates sections for public packages only in main changelog', () => {
 		path: '/test/packages/public-package',
 		version: '1.0.0',
 		changed: true,
-		commits: [{
-			subject: 'Add new feature',
-			type: 'feat',
-			scope: 'core',
-			breaking: false,
-			notes: [],
-			hash: 'abc1234',
-		}],
+		commits: [
+			{
+				subject: 'Add new feature',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'abc1234',
+			},
+		],
 		dependencyNames: [],
 		isPrivate: false,
 	};
@@ -27,20 +29,22 @@ it('generates sections for public packages only in main changelog', () => {
 		path: '/test/packages/private-package',
 		version: '1.0.0',
 		changed: true,
-		commits: [{
-			subject: 'Fix private bug',
-			type: 'fix',
-			scope: 'internal',
-			breaking: false,
-			notes: [],
-			hash: 'def5678',
-		}],
+		commits: [
+			{
+				subject: 'Fix private bug',
+				type: 'fix',
+				scope: 'internal',
+				breaking: false,
+				notes: [],
+				hash: 'def5678',
+			},
+		],
 		dependencyNames: [],
 		isPrivate: true,
 	};
-	const workspaces = { 
-		'public-package': publicWorkspace, 
-		'private-package': privateWorkspace 
+	const workspaces = {
+		'public-package': publicWorkspace,
+		'private-package': privateWorkspace,
 	};
 	const baseUrl = 'https://github.com/user/repo';
 
@@ -49,7 +53,9 @@ it('generates sections for public packages only in main changelog', () => {
 
 	// Assess
 	expect(result.mainSections).toContain('### Features');
-	expect(result.mainSections).toContain('**public-package** Add new feature ([abc1234](https://github.com/user/repo/commit/abc1234))');
+	expect(result.mainSections).toContain(
+		'**public-package** Add new feature ([abc1234](https://github.com/user/repo/commit/abc1234))'
+	);
 	expect(result.mainSections).not.toContain('private-package');
 	expect(result.mainSections).not.toContain('Fix private bug');
 });
@@ -62,14 +68,16 @@ it('includes all packages in workspace sections', () => {
 		path: '/test/packages/public-package',
 		version: '1.0.0',
 		changed: true,
-		commits: [{
-			subject: 'Add feature',
-			type: 'feat',
-			scope: 'core',
-			breaking: false,
-			notes: [],
-			hash: 'abc1234',
-		}],
+		commits: [
+			{
+				subject: 'Add feature',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'abc1234',
+			},
+		],
 		dependencyNames: [],
 		isPrivate: false,
 	};
@@ -79,20 +87,22 @@ it('includes all packages in workspace sections', () => {
 		path: '/test/packages/private-package',
 		version: '1.0.0',
 		changed: true,
-		commits: [{
-			subject: 'Fix bug',
-			type: 'fix',
-			scope: 'internal',
-			breaking: false,
-			notes: [],
-			hash: 'def5678',
-		}],
+		commits: [
+			{
+				subject: 'Fix bug',
+				type: 'fix',
+				scope: 'internal',
+				breaking: false,
+				notes: [],
+				hash: 'def5678',
+			},
+		],
 		dependencyNames: [],
 		isPrivate: true,
 	};
-	const workspaces = { 
-		'public-package': publicWorkspace, 
-		'private-package': privateWorkspace 
+	const workspaces = {
+		'public-package': publicWorkspace,
+		'private-package': privateWorkspace,
 	};
 	const baseUrl = 'https://github.com/user/repo';
 
@@ -102,14 +112,18 @@ it('includes all packages in workspace sections', () => {
 	// Assess
 	expect(result.workspaceSections.has('public-package')).toBe(true);
 	expect(result.workspaceSections.has('private-package')).toBe(true);
-	
+
 	const publicSections = result.workspaceSections.get('public-package');
 	expect(publicSections?.has('Features')).toBe(true);
-	expect(publicSections?.get('Features')).toContain('- Add feature ([abc1234](https://github.com/user/repo/commit/abc1234))');
-	
+	expect(publicSections?.get('Features')).toContain(
+		'- Add feature ([abc1234](https://github.com/user/repo/commit/abc1234))'
+	);
+
 	const privateSections = result.workspaceSections.get('private-package');
 	expect(privateSections?.has('Bug Fixes')).toBe(true);
-	expect(privateSections?.get('Bug Fixes')).toContain('- Fix bug ([def5678](https://github.com/user/repo/commit/def5678))');
+	expect(privateSections?.get('Bug Fixes')).toContain(
+		'- Fix bug ([def5678](https://github.com/user/repo/commit/def5678))'
+	);
 });
 
 it('skips unchanged workspaces', () => {
@@ -120,13 +134,15 @@ it('skips unchanged workspaces', () => {
 		path: '/test/packages/changed-package',
 		version: '1.0.0',
 		changed: true,
-		commits: [{
-			subject: 'Add feature',
-			type: 'feat',
-			scope: 'core',
-			breaking: false,
-			notes: [],
-		}],
+		commits: [
+			{
+				subject: 'Add feature',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+			},
+		],
 		dependencyNames: [],
 		isPrivate: false,
 	};
@@ -140,9 +156,9 @@ it('skips unchanged workspaces', () => {
 		dependencyNames: [],
 		isPrivate: false,
 	};
-	const workspaces = { 
-		'changed-package': changedWorkspace, 
-		'unchanged-package': unchangedWorkspace 
+	const workspaces = {
+		'changed-package': changedWorkspace,
+		'unchanged-package': unchangedWorkspace,
 	};
 	const baseUrl = 'https://github.com/user/repo';
 
@@ -225,13 +241,15 @@ it('handles commits without hash', () => {
 		path: '/test/packages/test-package',
 		version: '1.0.0',
 		changed: true,
-		commits: [{
-			subject: 'Add feature without hash',
-			type: 'feat',
-			scope: 'core',
-			breaking: false,
-			notes: [],
-		}],
+		commits: [
+			{
+				subject: 'Add feature without hash',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+			},
+		],
 		dependencyNames: [],
 		isPrivate: false,
 	};

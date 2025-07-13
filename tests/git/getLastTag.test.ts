@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 import { getLastTag } from '../../src/git.js';
 
 const mocks = vi.hoisted(() => ({
@@ -16,14 +16,17 @@ beforeEach(() => {
 it('returns the last tag when available', () => {
 	// Prepare
 	mocks.execSync.mockReturnValue(Buffer.from('v1.2.3\n'));
-	
+
 	// Act
 	const result = getLastTag('/test/path');
-	
+
 	// Assess
-	expect(mocks.execSync).toHaveBeenCalledWith('git describe --tags --abbrev=0', {
-		cwd: '/test/path',
-	});
+	expect(mocks.execSync).toHaveBeenCalledWith(
+		'git describe --tags --abbrev=0',
+		{
+			cwd: '/test/path',
+		}
+	);
 	expect(result).toBe('v1.2.3');
 });
 
@@ -32,24 +35,40 @@ it('returns null when no tags are found', () => {
 	mocks.execSync.mockImplementation(() => {
 		throw new Error('No tags found');
 	});
-	
+
 	// Act
 	const result = getLastTag('/test/path');
-	
+
 	// Assess
-	expect(mocks.execSync).toHaveBeenCalledWith('git describe --tags --abbrev=0', {
-		cwd: '/test/path',
-	});
+	expect(mocks.execSync).toHaveBeenCalledWith(
+		'git describe --tags --abbrev=0',
+		{
+			cwd: '/test/path',
+		}
+	);
 	expect(result).toBeNull();
 });
 
 it('trims whitespace from tag output', () => {
 	// Prepare
 	mocks.execSync.mockReturnValue(Buffer.from('  v2.0.0  \n\t  '));
-	
+
 	// Act
 	const result = getLastTag('/test/path');
-	
+
 	// Assess
 	expect(result).toBe('v2.0.0');
+});
+
+it('handles non-Error exceptions', () => {
+	// Prepare
+	mocks.execSync.mockImplementation(() => {
+		throw 'String error';
+	});
+
+	// Act
+	const result = getLastTag('/test/path');
+
+	// Assess
+	expect(result).toBeNull();
 });

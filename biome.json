@@ -1,13 +1,14 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-	"organizeImports": {
-		"enabled": true
-	},
+	"$schema": "https://biomejs.dev/schemas/2.1.1/schema.json",
+	"assist": { "actions": { "source": { "organizeImports": "on" } } },
 	"files": {
-		"ignore": [
-			"coverage/*",
-			"packages/*/coverage/*",
-			"packages/infrastructure/cdk.out/*"
+		"includes": [
+			"**",
+			"!**/coverage/**/*",
+			"!**/packages/**/*/coverage/**/*",
+			"!**/packages/infrastructure/cdk.out/**/*",
+			"!**/node_modules/**/*",
+			"!**/.amazonq/**/*"
 		]
 	},
 	"linter": {

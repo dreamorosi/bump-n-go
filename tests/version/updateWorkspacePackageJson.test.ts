@@ -1,6 +1,6 @@
-import { it, expect, beforeEach, vi } from 'vitest';
-import { bumpVersions } from '../../src/version.js';
+import { beforeEach, expect, it, vi } from 'vitest';
 import type { Workspace } from '../../src/types.js';
+import { bumpVersions } from '../../src/version.js';
 
 const mocks = vi.hoisted(() => ({
 	existsSync: vi.fn(),

@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 import { getAffectedWorkspacesFromChangedFiles } from '../../src/commits.js';
 import type { Workspace } from '../../src/types.js';
 
@@ -21,7 +21,10 @@ beforeEach(() => {
 
 it('returns affected workspaces with production dependency changes', () => {
 	// Prepare
-	const changedFiles = ['packages/workspace-a/package.json', 'packages/workspace-b/package.json'];
+	const changedFiles = [
+		'packages/workspace-a/package.json',
+		'packages/workspace-b/package.json',
+	];
 	const workspace1: Workspace = {
 		name: 'workspace-a',
 		shortName: 'workspace-a',
@@ -66,13 +69,26 @@ it('returns affected workspaces with production dependency changes', () => {
 `);
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(1);
 	expect(result[0]).toBe(workspace1);
-	expect(mocks.getFileDiff).toHaveBeenCalledWith('/test', 'abc123', 'packages/workspace-a/package.json');
-	expect(mocks.getFileDiff).toHaveBeenCalledWith('/test', 'abc123', 'packages/workspace-b/package.json');
+	expect(mocks.getFileDiff).toHaveBeenCalledWith(
+		'/test',
+		'abc123',
+		'packages/workspace-a/package.json'
+	);
+	expect(mocks.getFileDiff).toHaveBeenCalledWith(
+		'/test',
+		'abc123',
+		'packages/workspace-b/package.json'
+	);
 });
 
 it('filters out non-package.json files', () => {
@@ -81,7 +97,7 @@ it('filters out non-package.json files', () => {
 		'packages/workspace-a/package.json',
 		'packages/workspace-a/src/index.ts',
 		'packages/workspace-a/README.md',
-		'packages/workspace-b/package.json'
+		'packages/workspace-b/package.json',
 	];
 	const workspace1: Workspace = {
 		name: 'workspace-a',
@@ -123,7 +139,12 @@ it('filters out non-package.json files', () => {
    }`);
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(1);
@@ -157,12 +178,21 @@ it('skips root package.json', () => {
 `);
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(1);
 	expect(mocks.getFileDiff).toHaveBeenCalledTimes(1);
-	expect(mocks.getFileDiff).toHaveBeenCalledWith('/test', 'abc123', 'packages/workspace-a/package.json');
+	expect(mocks.getFileDiff).toHaveBeenCalledWith(
+		'/test',
+		'abc123',
+		'packages/workspace-a/package.json'
+	);
 });
 
 it('skips private workspaces', () => {
@@ -185,7 +215,12 @@ it('skips private workspaces', () => {
 	mocks.relative.mockReturnValue('packages/private-workspace');
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(0);
@@ -210,7 +245,12 @@ it('returns empty array when no matching workspaces found', () => {
 	const commitHash = 'abc123';
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(0);
@@ -244,11 +284,20 @@ it('excludes workspaces without production dependency changes', () => {
 `);
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(0);
-	expect(mocks.getFileDiff).toHaveBeenCalledWith('/test', 'abc123', 'packages/workspace-a/package.json');
+	expect(mocks.getFileDiff).toHaveBeenCalledWith(
+		'/test',
+		'abc123',
+		'packages/workspace-a/package.json'
+	);
 });
 
 it('handles empty changed files array', () => {
@@ -269,7 +318,12 @@ it('handles empty changed files array', () => {
 	const commitHash = 'abc123';
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(0);
@@ -281,7 +335,7 @@ it('handles multiple workspaces with mixed results', () => {
 	const changedFiles = [
 		'packages/workspace-a/package.json',
 		'packages/workspace-b/package.json',
-		'packages/private-workspace/package.json'
+		'packages/private-workspace/package.json',
 	];
 	const workspace1: Workspace = {
 		name: 'workspace-a',
@@ -313,20 +367,23 @@ it('handles multiple workspaces with mixed results', () => {
 		dependencyNames: [],
 		isPrivate: true,
 	};
-	const workspaces = { 
-		'workspace-a': workspace1, 
+	const workspaces = {
+		'workspace-a': workspace1,
 		'workspace-b': workspace2,
-		'private-workspace': privateWorkspace
+		'private-workspace': privateWorkspace,
 	};
 	const rootPath = '/test';
 	const commitHash = 'abc123';
 
-	mocks.relative.mockImplementation((rootPath: string, workspacePath: string) => {
-		if (workspacePath.includes('workspace-a')) return 'packages/workspace-a';
-		if (workspacePath.includes('workspace-b')) return 'packages/workspace-b';
-		if (workspacePath.includes('private-workspace')) return 'packages/private-workspace';
-		return '';
-	});
+	mocks.relative.mockImplementation(
+		(_rootPath: string, workspacePath: string) => {
+			if (workspacePath.includes('workspace-a')) return 'packages/workspace-a';
+			if (workspacePath.includes('workspace-b')) return 'packages/workspace-b';
+			if (workspacePath.includes('private-workspace'))
+				return 'packages/private-workspace';
+			return '';
+		}
+	);
 	mocks.getFileDiff
 		.mockReturnValueOnce(`
 @@ -10,6 +10,7 @@
@@ -344,7 +401,12 @@ it('handles multiple workspaces with mixed results', () => {
 `);
 
 	// Act
-	const result = getAffectedWorkspacesFromChangedFiles(changedFiles, workspaces, rootPath, commitHash);
+	const result = getAffectedWorkspacesFromChangedFiles(
+		changedFiles,
+		workspaces,
+		rootPath,
+		commitHash
+	);
 
 	// Assess
 	expect(result).toHaveLength(1);

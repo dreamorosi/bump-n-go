@@ -1,4 +1,4 @@
-import { it, expect } from 'vitest';
+import { expect, it } from 'vitest';
 import { hasProductionDependencyChanges } from '../../src/commits.js';
 
 it('detects changes in dependencies section', () => {

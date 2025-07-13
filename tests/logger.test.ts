@@ -1,14 +1,13 @@
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { loggerFactory } from '../src/logger.js';
+import { afterEach, expect, it, vi } from 'vitest';
+import { configureLogger, logger } from '../src/logger.js';
 
 afterEach(() => {
 	vi.clearAllMocks();
+	// Reset logger to non-verbose mode after each test
+	configureLogger(false);
 });
 
-it('returns logger with debug, info, error, and warn methods', () => {
-	// Act
-	const logger = loggerFactory(false);
-
+it('has debug, info, error, and warn methods', () => {
 	// Assess
 	expect(logger).toHaveProperty('debug');
 	expect(logger).toHaveProperty('info');
@@ -20,9 +19,9 @@ it('returns logger with debug, info, error, and warn methods', () => {
 	expect(typeof logger.warn).toBe('function');
 });
 
-it('logs debug messages when verbose is true', () => {
+it('logs debug messages when verbose is configured', () => {
 	// Prepare
-	const logger = loggerFactory(true);
+	configureLogger(true);
 
 	// Act
 	logger.debug('debug message');
@@ -31,9 +30,9 @@ it('logs debug messages when verbose is true', () => {
 	expect(console.debug).toHaveBeenCalledWith('debug message');
 });
 
-it('does not log debug messages when verbose is false', () => {
+it('does not log debug messages when verbose is not configured', () => {
 	// Prepare
-	const logger = loggerFactory(false);
+	configureLogger(false);
 
 	// Act
 	logger.debug('debug message');
@@ -43,13 +42,12 @@ it('does not log debug messages when verbose is false', () => {
 });
 
 it('always logs info messages regardless of verbose setting', () => {
-	// Prepare
-	const verboseLogger = loggerFactory(true);
-	const quietLogger = loggerFactory(false);
+	// Prepare & Act
+	configureLogger(true);
+	logger.info('verbose info');
 
-	// Act
-	verboseLogger.info('verbose info');
-	quietLogger.info('quiet info');
+	configureLogger(false);
+	logger.info('quiet info');
 
 	// Assess
 	expect(console.info).toHaveBeenCalledWith('verbose info');
@@ -58,9 +56,6 @@ it('always logs info messages regardless of verbose setting', () => {
 });
 
 it('always logs error messages using console.error', () => {
-	// Prepare
-	const logger = loggerFactory(false);
-
 	// Act
 	logger.error('error message');
 
@@ -69,9 +64,6 @@ it('always logs error messages using console.error', () => {
 });
 
 it('always logs warn messages using console.warn', () => {
-	// Prepare
-	const logger = loggerFactory(false);
-
 	// Act
 	logger.warn('warning message');
 
@@ -79,9 +71,9 @@ it('always logs warn messages using console.warn', () => {
 	expect(console.warn).toHaveBeenCalledWith('warning message');
 });
 
-it('handles multiple debug calls with verbose true', () => {
+it('handles multiple debug calls with verbose configured', () => {
 	// Prepare
-	const logger = loggerFactory(true);
+	configureLogger(true);
 
 	// Act
 	logger.debug('first debug');
@@ -93,9 +85,9 @@ it('handles multiple debug calls with verbose true', () => {
 	expect(console.debug).toHaveBeenCalledTimes(2);
 });
 
-it('handles multiple debug calls with verbose false', () => {
+it('handles multiple debug calls without verbose configured', () => {
 	// Prepare
-	const logger = loggerFactory(false);
+	configureLogger(false);
 
 	// Act
 	logger.debug('first debug');
@@ -107,7 +99,7 @@ it('handles multiple debug calls with verbose false', () => {
 
 it('handles mixed log levels correctly', () => {
 	// Prepare
-	const logger = loggerFactory(true);
+	configureLogger(true);
 
 	// Act
 	logger.debug('debug msg');
@@ -120,4 +112,18 @@ it('handles mixed log levels correctly', () => {
 	expect(console.info).toHaveBeenCalledWith('info msg');
 	expect(console.warn).toHaveBeenCalledWith('warn msg');
 	expect(console.error).toHaveBeenCalledWith('error msg');
+});
+
+it('can reconfigure verbosity during runtime', () => {
+	// Prepare
+	configureLogger(false);
+	logger.debug('should not log');
+
+	// Act
+	configureLogger(true);
+	logger.debug('should log');
+
+	// Assess
+	expect(console.debug).toHaveBeenCalledTimes(1);
+	expect(console.debug).toHaveBeenCalledWith('should log');
 });

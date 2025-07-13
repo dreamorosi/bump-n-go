@@ -143,3 +143,5 @@ dist
 lib
 dist
 *.local.*
+.amazonq
+.claude

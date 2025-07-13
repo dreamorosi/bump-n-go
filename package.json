@@ -1,24 +1,53 @@
 {
-	"name": "ship-it-cli",
+	"name": "bump-n-go",
 	"version": "0.0.1",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+	"bin": {
+		"bump-n-go": "./lib/cli.js"
 	},
-	"keywords": ["changelog", "monorepo", "versioning", "ship", "release"],
+	"scripts": {
+		"test": "vitest --run tests",
+		"test:unit": "vitest --run tests",
+		"test:unit:coverage": "vitest --run tests --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
+		"lint": "biome lint .",
+		"lint:fix": "biome check --write .",
+		"build": "tsc --build tsconfig.json"
+	},
+	"keywords": [
+		"changelog",
+		"monorepo",
+		"versioning",
+		"ship",
+		"release",
+		"semver",
+		"conventional-commits",
+		"bump"
+	],
 	"author": "Andrea Amorosi <dreamorosi@gmail.com>",
 	"license": "Apache-2.0",
-	"description": "An opinionated changelog generator and versioning tool for monorepos",
+	"description": "An opinionated changelog generator and versioning tool for monorepos and single-package repositories.",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@types/node": "^22.13.9",
-		"@types/semver": "^7.5.8",
-		"@vitest/coverage-v8": "^3.0.7",
-		"typescript": "^5.8.2",
-		"vitest": "^3.0.7"
+		"@biomejs/biome": "^2.1.1",
+		"@types/node": "^24.0.13",
+		"@types/semver": "^7.7.0",
+		"@vitest/coverage-v8": "^3.2.4",
+		"typescript": "^5.8.3",
+		"vitest": "^3.2.4"
 	},
 	"type": "module",
 	"dependencies": {
-		"conventional-commits-parser": "^6.1.0",
-		"semver": "^7.7.1"
+		"conventional-commits-parser": "^6.2.0",
+		"meow": "^13.2.0",
+		"semver": "^7.7.2"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/dreamorosi/ship-it-cli.git"
+	},
+	"bugs": {
+		"url": "https://github.com/dreamorosi/ship-it-cli/issues"
+	},
+	"homepage": "https://github.com/dreamorosi/ship-it-cli#readme",
+	"engines": {
+		"node": ">=22.0.0"
 	}
 }
