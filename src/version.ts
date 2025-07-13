@@ -2,6 +2,23 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Workspace } from './types.js';
 
+/**
+ * Preserves version range operators when updating dependency versions.
+ *
+ * Extracts and maintains the semantic version range operator (^, ~, >=, etc.)
+ * from the current version range and applies it to the new version.
+ *
+ * @param currentRange - the current version range (e.g., "^1.0.0", "~2.1.0")
+ * @param newVersion - the new version to apply the range to
+ * @returns the new version with the preserved range operator
+ *
+ * @example
+ * ```typescript
+ * preserveVersionRange("^1.0.0", "2.1.0") // Returns "^2.1.0"
+ * preserveVersionRange("~1.5.0", "2.1.0") // Returns "~2.1.0"
+ * preserveVersionRange(">=1.0.0", "2.1.0") // Returns ">=2.1.0"
+ * ```
+ */
 const preserveVersionRange = (
 	currentRange: string,
 	newVersion: string
@@ -14,6 +31,18 @@ const preserveVersionRange = (
 	return `${operator}${newVersion}`;
 };
 
+/**
+ * Updates a workspace's package.json file with new version and dependency versions.
+ *
+ * Updates the package version and any intra-project dependencies to maintain
+ * consistency across the repository. Preserves version range operators and
+ * skips local file references. Works for both monorepo workspaces and
+ * single-package repositories.
+ *
+ * @param workspace - the workspace to update
+ * @param newVersion - the new version to set
+ * @param allWorkspaces - record of all workspaces for dependency resolution
+ */
 const updateWorkspacePackageJson = (
 	workspace: Workspace,
 	newVersion: string,
@@ -61,6 +90,16 @@ const updateWorkspacePackageJson = (
 	writeFileSync(pkgPath, `${JSON.stringify(pkg, null, '\t')}\n`, 'utf-8');
 };
 
+/**
+ * Updates the package-lock.json file with new workspace versions.
+ *
+ * Scans the lockfile for workspace packages and updates their version
+ * references to maintain consistency with the new version.
+ *
+ * @param rootPath - the root path of the monorepo
+ * @param newVersion - the new version to set
+ * @param allWorkspaces - record of all workspaces for name resolution
+ */
 const updatePackageLock = (
 	rootPath: string,
 	newVersion: string,
@@ -102,6 +141,23 @@ const updatePackageLock = (
 	}
 };
 
+/**
+ * Bumps versions across all workspace packages and updates the lockfile.
+ *
+ * Orchestrates the version update process by updating all workspace
+ * package.json files and the root package-lock.json file to maintain
+ * consistency across the repository. Works for both monorepos and
+ * single-package repositories.
+ *
+ * @param rootPath - the root path of the repository
+ * @param workspaces - record of all workspaces to update
+ * @param newVersion - the new version to set across all packages
+ *
+ * @example
+ * ```typescript
+ * bumpVersions('/path/to/repo', workspaces, '2.1.0');
+ * ```
+ */
 const bumpVersions = (
 	rootPath: string,
 	workspaces: Record<string, Workspace>,
@@ -116,4 +172,9 @@ const bumpVersions = (
 	updatePackageLock(rootPath, newVersion, workspaces);
 };
 
-export { bumpVersions, preserveVersionRange };
+export {
+	bumpVersions,
+	preserveVersionRange,
+	updateWorkspacePackageJson,
+	updatePackageLock,
+};

@@ -1,6 +1,6 @@
-import { it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 import { processMonorepo } from '../src/index.js';
-import type { Workspace, RawCommit } from '../src/types.js';
+import type { RawCommit, Workspace } from '../src/types.js';
 
 const mocks = vi.hoisted(() => ({
 	readFileSync: vi.fn(),
@@ -13,10 +13,13 @@ const mocks = vi.hoisted(() => ({
 	determineVersionBumpType: vi.fn(),
 	updateChangelogs: vi.fn(),
 	bumpVersions: vi.fn(),
-	loggerFactory: vi.fn(),
-	consoleError: vi.fn(),
-	consoleInfo: vi.fn(),
-	consoleDebug: vi.fn(),
+	configureLogger: vi.fn(),
+	logger: {
+		error: vi.fn(),
+		info: vi.fn(),
+		debug: vi.fn(),
+		warn: vi.fn(),
+	},
 }));
 
 vi.mock('node:fs', () => ({
@@ -54,18 +57,12 @@ vi.mock('../src/version.js', () => ({
 }));
 
 vi.mock('../src/logger.js', () => ({
-	loggerFactory: mocks.loggerFactory,
+	configureLogger: mocks.configureLogger,
+	logger: mocks.logger,
 }));
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	
-	// Setup default logger mock
-	mocks.loggerFactory.mockReturnValue({
-		error: mocks.consoleError,
-		info: mocks.consoleInfo,
-		debug: mocks.consoleDebug,
-	});
 });
 
 it('returns early for invalid version bump type', async () => {
@@ -80,7 +77,7 @@ it('returns early for invalid version bump type', async () => {
 	await processMonorepo(options);
 
 	// Assess
-	expect(mocks.consoleError).toHaveBeenCalledWith(
+	expect(mocks.logger.error).toHaveBeenCalledWith(
 		'Invalid type provided: invalid. Valid types are: major, minor, patch'
 	);
 	expect(mocks.getLastTag).not.toHaveBeenCalled();
@@ -107,13 +104,12 @@ it('returns early when no changes detected and no type provided', async () => {
 	await processMonorepo(options);
 
 	// Assess
-	expect(mocks.consoleInfo).toHaveBeenCalledWith(
+	expect(mocks.logger.info).toHaveBeenCalledWith(
 		'No changes detected in workspaces and no version bump type provided; skipping version bump'
 	);
 	expect(mocks.updateChangelogs).not.toHaveBeenCalled();
 	expect(mocks.bumpVersions).not.toHaveBeenCalled();
 });
-
 
 it('handles dry run mode correctly', async () => {
 	// Prepare
@@ -138,8 +134,10 @@ it('handles dry run mode correctly', async () => {
 	await processMonorepo(options);
 
 	// Assess
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('New version: 1.0.1');
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('Dry run enabled, no changes will be made');
+	expect(mocks.logger.info).toHaveBeenCalledWith('New version: 1.0.1');
+	expect(mocks.logger.info).toHaveBeenCalledWith(
+		'Dry run enabled, no changes will be made'
+	);
 	expect(mocks.updateChangelogs).not.toHaveBeenCalled();
 	expect(mocks.bumpVersions).not.toHaveBeenCalled();
 });
@@ -200,8 +198,10 @@ it('processes monorepo successfully with provided version type', async () => {
 	await processMonorepo(options);
 
 	// Assess
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('Version bump type provided: minor');
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('New version: 1.1.0');
+	expect(mocks.logger.info).toHaveBeenCalledWith(
+		'Version bump type provided: minor'
+	);
+	expect(mocks.logger.info).toHaveBeenCalledWith('New version: 1.1.0');
 	expect(mocks.updateChangelogs).toHaveBeenCalledWith(
 		'/test',
 		workspaces,
@@ -210,8 +210,10 @@ it('processes monorepo successfully with provided version type', async () => {
 		'https://github.com/user/repo'
 	);
 	expect(mocks.bumpVersions).toHaveBeenCalledWith('/test', workspaces, '1.1.0');
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('Updated changelogs');
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('Bumped all package versions to 1.1.0');
+	expect(mocks.logger.info).toHaveBeenCalledWith('Updated changelogs');
+	expect(mocks.logger.info).toHaveBeenCalledWith(
+		'Bumped all package versions to 1.1.0'
+	);
 });
 
 it('determines version bump type from commits when not provided', async () => {
@@ -268,8 +270,10 @@ it('determines version bump type from commits when not provided', async () => {
 
 	// Assess
 	expect(mocks.determineVersionBumpType).toHaveBeenCalledTimes(2);
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('Determined version bump type: major');
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('New version: 2.0.0');
+	expect(mocks.logger.info).toHaveBeenCalledWith(
+		'Determined version bump type: major'
+	);
+	expect(mocks.logger.info).toHaveBeenCalledWith('New version: 2.0.0');
 });
 
 it('handles prerelease versions correctly', async () => {
@@ -303,7 +307,7 @@ it('handles prerelease versions correctly', async () => {
 	await processMonorepo(options);
 
 	// Assess
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('New version: 1.1.0-alpha');
+	expect(mocks.logger.info).toHaveBeenCalledWith('New version: 1.1.0-alpha');
 });
 
 it('handles no last tag scenario', async () => {
@@ -338,7 +342,7 @@ it('handles no last tag scenario', async () => {
 	await processMonorepo(options);
 
 	// Assess
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('New version: 0.0.1');
+	expect(mocks.logger.info).toHaveBeenCalledWith('New version: 0.0.1');
 	expect(mocks.updateChangelogs).toHaveBeenCalledWith(
 		'/test',
 		workspaces,
@@ -493,7 +497,10 @@ it('skips unchanged workspaces when determining bump type', async () => {
 		dependencyNames: [],
 		isPrivate: false,
 	};
-	const workspaces = { 'workspace-a': changedWorkspace, 'workspace-b': unchangedWorkspace };
+	const workspaces = {
+		'workspace-a': changedWorkspace,
+		'workspace-b': unchangedWorkspace,
+	};
 
 	mocks.getLastTag.mockReturnValue('v1.0.0');
 	mocks.getCommitsSinceTag.mockReturnValue(commits);
@@ -518,5 +525,38 @@ it('skips unchanged workspaces when determining bump type', async () => {
 
 	// Assess
 	expect(mocks.determineVersionBumpType).toHaveBeenCalledTimes(1);
-	expect(mocks.consoleInfo).toHaveBeenCalledWith('Determined version bump type: minor');
+	expect(mocks.logger.info).toHaveBeenCalledWith(
+		'Determined version bump type: minor'
+	);
 });
+
+it('skips version bump when no workspace changes and no type provided', async () => {
+	// Prepare
+	const options = {
+		root: '/test',
+		verbose: false,
+	};
+	const commits: RawCommit[] = [
+		{ hash: 'abc123', subject: 'feat: add feature', body: '' },
+	];
+	const workspaces: Record<string, Workspace> = {};
+
+	mocks.getLastTag.mockReturnValue(null);
+	mocks.getCommitsSinceTag.mockReturnValue(commits);
+	mocks.readWorkspaces.mockReturnValue(workspaces);
+	mocks.parseCommits.mockReturnValue({
+		workspaceChanged: false,
+		workspaces,
+	});
+
+	// Act
+	await processMonorepo(options);
+
+	// Assess
+	expect(mocks.logger.info).toHaveBeenCalledWith(
+		'No changes detected in workspaces and no version bump type provided; skipping version bump'
+	);
+	expect(mocks.updateChangelogs).not.toHaveBeenCalled();
+	expect(mocks.bumpVersions).not.toHaveBeenCalled();
+});
+

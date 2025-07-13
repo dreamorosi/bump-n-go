@@ -1,3 +1,8 @@
+/**
+ * Maps conventional commit types to their corresponding semantic version bump type.
+ *
+ * Used to determine what type of version bump should be applied based on commit types.
+ */
 const ChangeTypeMapping = {
 	feat: 'minor',
 	feature: 'minor',
@@ -13,6 +18,11 @@ const ChangeTypeMapping = {
 	build: 'patch',
 } as const;
 
+/**
+ * Maps conventional commit types to their corresponding changelog section headers.
+ *
+ * Used when generating changelog sections to group commits under appropriate headings.
+ */
 const ChangeTypeHeaderMapping = {
 	feat: 'Features',
 	feature: 'Features',
@@ -28,6 +38,12 @@ const ChangeTypeHeaderMapping = {
 	build: 'Build System',
 } as const;
 
+/**
+ * Hierarchy values for version bump types to determine precedence.
+ *
+ * Higher values take precedence when multiple bump types are detected.
+ * Used to determine the maximum bump type across all workspaces.
+ */
 const TypeHierarchy = {
 	major: 3,
 	minor: 2,

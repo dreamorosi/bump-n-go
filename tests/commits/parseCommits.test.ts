@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 import { parseCommits } from '../../src/commits.js';
 import type { RawCommit, Workspace } from '../../src/types.js';
 
@@ -117,7 +117,9 @@ it('ignores commits with invalid format', () => {
 
 	// Assess
 	expect(result.workspaces['workspace-a'].commits).toHaveLength(1);
-	expect(result.workspaces['workspace-a'].commits[0].subject).toBe('valid commit');
+	expect(result.workspaces['workspace-a'].commits[0].subject).toBe(
+		'valid commit'
+	);
 });
 
 it('ignores commits with disallowed types', () => {
@@ -152,7 +154,9 @@ it('ignores commits with disallowed types', () => {
 
 	// Assess
 	expect(result.workspaces['workspace-a'].commits).toHaveLength(1);
-	expect(result.workspaces['workspace-a'].commits[0].subject).toBe('valid commit');
+	expect(result.workspaces['workspace-a'].commits[0].subject).toBe(
+		'valid commit'
+	);
 });
 
 it('ignores commits for non-existent workspaces', () => {
@@ -214,7 +218,9 @@ it('detects breaking changes from notes', () => {
 	// Assess
 	expect(result.workspaces['workspace-a'].commits[0].breaking).toBe(true);
 	expect(result.workspaces['workspace-a'].commits[0].notes).toHaveLength(1);
-	expect(result.workspaces['workspace-a'].commits[0].notes[0].title).toBe('BREAKING CHANGE');
+	expect(result.workspaces['workspace-a'].commits[0].notes[0].title).toBe(
+		'BREAKING CHANGE'
+	);
 });
 
 it('handles dependabot group commits', () => {

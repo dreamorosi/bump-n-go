@@ -14,7 +14,9 @@ vi.mock('node:fs', async () => ({
 }));
 
 beforeEach(() => {
-	vi.clearAllMocks();
+	vi.resetAllMocks();
+	// Reset default mock behaviors
+	mocks.existsSync.mockReturnValue(true);
 });
 
 it('reads workspaces from array format', () => {
@@ -149,22 +151,33 @@ it('reads workspaces from object format', () => {
 	});
 });
 
-it('handles empty or missing workspaces definition', () => {
+it('handles empty or missing workspaces definition by treating root as workspace', () => {
 	// Prepare
 	const root = '/test/root';
 	mocks.readFileSync.mockImplementationOnce((_path: string) =>
 		JSON.stringify({
 			name: 'root-pkg',
+			version: '1.0.0',
 		})
 	);
+	mocks.globSync.mockReturnValueOnce([]);
 
 	// Act
 	const result = readWorkspaces(root);
 
 	// Assess
-	expect(mocks.readFileSync).toHaveBeenCalledTimes(1);
-	expect(mocks.globSync).not.toHaveBeenCalled();
-	expect(result).toEqual({});
+	expect(result).toEqual({
+		'root-pkg': {
+			name: 'root-pkg',
+			shortName: 'root-pkg',
+			path: '/test/root',
+			version: '1.0.0',
+			changed: false,
+			commits: [],
+			dependencyNames: [],
+			isPrivate: false,
+		},
+	});
 });
 
 it('skips directories without package.json', () => {
@@ -182,16 +195,12 @@ it('skips directories without package.json', () => {
 		'packages/c',
 	]);
 	mocks.existsSync
-		.mockImplementationOnce(() => true) // packages/a
-		.mockImplementationOnce(() => false) // packages/b
-		.mockImplementationOnce(() => true); // packages/c
+		.mockReturnValueOnce(true) // packages/a
+		.mockReturnValueOnce(false) // packages/b
+		.mockReturnValueOnce(true); // packages/c
 	mocks.readFileSync
-		.mockImplementationOnce((path: string) =>
-			JSON.stringify({ name: 'pkg-a', version: '1.0.0' })
-		)
-		.mockImplementationOnce((path: string) =>
-			JSON.stringify({ name: 'pkg-c', version: '1.0.0' })
-		);
+		.mockReturnValueOnce(JSON.stringify({ name: 'pkg-a', version: '1.0.0' }))
+		.mockReturnValueOnce(JSON.stringify({ name: 'pkg-c', version: '1.0.0' }));
 
 	// Act
 	const result = readWorkspaces(root);
@@ -215,6 +224,7 @@ it('uses directory name as fallback when checking the shortName', () => {
 		})
 	);
 	mocks.globSync.mockReturnValueOnce(['packages/unnamed']);
+	mocks.existsSync.mockReturnValueOnce(true);
 	mocks.readFileSync.mockImplementationOnce((_path: string) =>
 		JSON.stringify({
 			name: 'unnamed-pkg',
@@ -242,7 +252,8 @@ it('handles scoped package names correctly', () => {
 		})
 	);
 	mocks.globSync.mockReturnValueOnce(['packages/scoped']);
-	mocks.readFileSync.mockImplementationOnce((path: string) =>
+	mocks.existsSync.mockReturnValueOnce(true);
+	mocks.readFileSync.mockImplementationOnce((_path: string) =>
 		JSON.stringify({
 			name: '@scope/pkg-name',
 			version: '1.0.0',
@@ -269,6 +280,7 @@ it('uses directory name when package has no name property', () => {
 		})
 	);
 	mocks.globSync.mockReturnValueOnce(['packages/my-package']);
+	mocks.existsSync.mockReturnValueOnce(true);
 	mocks.readFileSync.mockImplementationOnce((_path: string) =>
 		JSON.stringify({
 			version: '1.0.0',
@@ -296,6 +308,7 @@ it('uses directory name when package name is null', () => {
 		})
 	);
 	mocks.globSync.mockReturnValueOnce(['packages/null-name']);
+	mocks.existsSync.mockReturnValueOnce(true);
 	mocks.readFileSync.mockImplementationOnce((_path: string) =>
 		JSON.stringify({
 			name: null,
@@ -323,6 +336,7 @@ it('uses directory name when package name is empty string', () => {
 		})
 	);
 	mocks.globSync.mockReturnValueOnce(['packages/empty-name']);
+	mocks.existsSync.mockReturnValueOnce(true);
 	mocks.readFileSync.mockImplementationOnce((_path: string) =>
 		JSON.stringify({
 			name: '',

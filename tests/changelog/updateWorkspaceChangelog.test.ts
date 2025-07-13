@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { updateWorkspaceChangelog } from '../../src/changelog.js';
 
 const mocks = vi.hoisted(() => ({
@@ -37,18 +37,29 @@ it('updates workspace changelog with sections', () => {
 		['Features', ['- Add new feature', '- Add another feature']],
 		['Bug Fixes', ['- Fix critical bug']],
 	]);
-	const existingContent = '# Changelog\n\n## [0.9.0] (2024-01-01)\n\n- Previous release';
+	const existingContent =
+		'# Changelog\n\n## [0.9.0] (2024-01-01)\n\n- Previous release';
 
 	mocks.join.mockReturnValue('/test/packages/workspace-a/CHANGELOG.md');
 	mocks.statSync.mockReturnValue({ isFile: () => true });
 	mocks.readFileSync.mockReturnValue(existingContent);
 
 	// Act
-	updateWorkspaceChangelog(workspacePath, version, versionLink, workspaceSections);
+	updateWorkspaceChangelog(
+		workspacePath,
+		version,
+		versionLink,
+		workspaceSections
+	);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- Add new feature\n- Add another feature\n\n### Bug Fixes\n\n- Fix critical bug\n## [0.9.0] (2024-01-01)\n\n- Previous release';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith('/test/packages/workspace-a/CHANGELOG.md', expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n### Features\n\n- Add new feature\n- Add another feature\n\n### Bug Fixes\n\n- Fix critical bug\n## [0.9.0] (2024-01-01)\n\n- Previous release';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		'/test/packages/workspace-a/CHANGELOG.md',
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('adds version bump note when no sections provided', () => {
@@ -57,18 +68,29 @@ it('adds version bump note when no sections provided', () => {
 	const version = '1.1.0';
 	const versionLink = 'https://github.com/user/repo/releases/tag/v1.1.0';
 	const workspaceSections = undefined;
-	const existingContent = '# Changelog\n\n## [1.0.0] (2024-01-01)\n\n- Initial release';
+	const existingContent =
+		'# Changelog\n\n## [1.0.0] (2024-01-01)\n\n- Initial release';
 
 	mocks.join.mockReturnValue('/test/packages/workspace-b/CHANGELOG.md');
 	mocks.statSync.mockReturnValue({ isFile: () => true });
 	mocks.readFileSync.mockReturnValue(existingContent);
 
 	// Act
-	updateWorkspaceChangelog(workspacePath, version, versionLink, workspaceSections);
+	updateWorkspaceChangelog(
+		workspacePath,
+		version,
+		versionLink,
+		workspaceSections
+	);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.1.0](https://github.com/user/repo/releases/tag/v1.1.0) (2024-03-15)\n\n**Note:** Version bump only for this package\n\n## [1.0.0] (2024-01-01)\n\n- Initial release';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith('/test/packages/workspace-b/CHANGELOG.md', expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.1.0](https://github.com/user/repo/releases/tag/v1.1.0) (2024-03-15)\n\n**Note:** Version bump only for this package\n\n## [1.0.0] (2024-01-01)\n\n- Initial release';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		'/test/packages/workspace-b/CHANGELOG.md',
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('skips update when changelog file does not exist', () => {
@@ -84,7 +106,12 @@ it('skips update when changelog file does not exist', () => {
 	});
 
 	// Act
-	updateWorkspaceChangelog(workspacePath, version, versionLink, workspaceSections);
+	updateWorkspaceChangelog(
+		workspacePath,
+		version,
+		versionLink,
+		workspaceSections
+	);
 
 	// Assess
 	expect(mocks.readFileSync).not.toHaveBeenCalled();
@@ -102,7 +129,12 @@ it('skips update when path is not a file', () => {
 	mocks.statSync.mockReturnValue({ isFile: () => false });
 
 	// Act
-	updateWorkspaceChangelog(workspacePath, version, versionLink, workspaceSections);
+	updateWorkspaceChangelog(
+		workspacePath,
+		version,
+		versionLink,
+		workspaceSections
+	);
 
 	// Assess
 	expect(mocks.readFileSync).not.toHaveBeenCalled();
@@ -115,18 +147,29 @@ it('handles empty workspace sections map', () => {
 	const version = '1.0.0';
 	const versionLink = 'https://github.com/user/repo/releases/tag/v1.0.0';
 	const workspaceSections = new Map();
-	const existingContent = '# Changelog\n\n## [0.9.0] (2024-01-01)\n\n- Previous';
+	const existingContent =
+		'# Changelog\n\n## [0.9.0] (2024-01-01)\n\n- Previous';
 
 	mocks.join.mockReturnValue('/test/packages/workspace-e/CHANGELOG.md');
 	mocks.statSync.mockReturnValue({ isFile: () => true });
 	mocks.readFileSync.mockReturnValue(existingContent);
 
 	// Act
-	updateWorkspaceChangelog(workspacePath, version, versionLink, workspaceSections);
+	updateWorkspaceChangelog(
+		workspacePath,
+		version,
+		versionLink,
+		workspaceSections
+	);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n## [0.9.0] (2024-01-01)\n\n- Previous';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith('/test/packages/workspace-e/CHANGELOG.md', expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)\n\n## [0.9.0] (2024-01-01)\n\n- Previous';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		'/test/packages/workspace-e/CHANGELOG.md',
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('preserves existing changelog header format', () => {
@@ -142,11 +185,21 @@ it('preserves existing changelog header format', () => {
 	mocks.readFileSync.mockReturnValue(existingContent);
 
 	// Act
-	updateWorkspaceChangelog(workspacePath, version, versionLink, workspaceSections);
+	updateWorkspaceChangelog(
+		workspacePath,
+		version,
+		versionLink,
+		workspaceSections
+	);
 
 	// Assess
-	const expectedContent = '# Change Log\n\n## [2.0.0](https://github.com/user/repo/releases/tag/v2.0.0) (2024-03-15)\n\n### Features\n\n- Breaking change\n## Version 1.0.0\n\n- Old format';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith('/test/packages/workspace-f/CHANGELOG.md', expectedContent, 'utf-8');
+	const expectedContent =
+		'# Change Log\n\n## [2.0.0](https://github.com/user/repo/releases/tag/v2.0.0) (2024-03-15)\n\n### Features\n\n- Breaking change\n## Version 1.0.0\n\n- Old format';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		'/test/packages/workspace-f/CHANGELOG.md',
+		expectedContent,
+		'utf-8'
+	);
 });
 
 it('handles single section with multiple entries', () => {
@@ -155,11 +208,14 @@ it('handles single section with multiple entries', () => {
 	const version = '1.2.0';
 	const versionLink = 'https://github.com/user/repo/releases/tag/v1.2.0';
 	const workspaceSections = new Map([
-		['Features', [
-			'- Add user authentication',
-			'- Add password reset',
-			'- Add email verification'
-		]],
+		[
+			'Features',
+			[
+				'- Add user authentication',
+				'- Add password reset',
+				'- Add email verification',
+			],
+		],
 	]);
 	const existingContent = '# Changelog\n\n';
 
@@ -168,9 +224,19 @@ it('handles single section with multiple entries', () => {
 	mocks.readFileSync.mockReturnValue(existingContent);
 
 	// Act
-	updateWorkspaceChangelog(workspacePath, version, versionLink, workspaceSections);
+	updateWorkspaceChangelog(
+		workspacePath,
+		version,
+		versionLink,
+		workspaceSections
+	);
 
 	// Assess
-	const expectedContent = '# Changelog\n\n## [1.2.0](https://github.com/user/repo/releases/tag/v1.2.0) (2024-03-15)\n\n### Features\n\n- Add user authentication\n- Add password reset\n- Add email verification\n';
-	expect(mocks.writeFileSync).toHaveBeenCalledWith('/test/packages/workspace-g/CHANGELOG.md', expectedContent, 'utf-8');
+	const expectedContent =
+		'# Changelog\n\n## [1.2.0](https://github.com/user/repo/releases/tag/v1.2.0) (2024-03-15)\n\n### Features\n\n- Add user authentication\n- Add password reset\n- Add email verification\n';
+	expect(mocks.writeFileSync).toHaveBeenCalledWith(
+		'/test/packages/workspace-g/CHANGELOG.md',
+		expectedContent,
+		'utf-8'
+	);
 });

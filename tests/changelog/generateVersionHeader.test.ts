@@ -1,4 +1,4 @@
-import { it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { generateVersionHeader } from '../../src/changelog.js';
 
 beforeEach(() => {
@@ -20,7 +20,9 @@ it('generates version header with current date', () => {
 	const result = generateVersionHeader(version, versionLink);
 
 	// Assess
-	expect(result).toBe('## [2.1.0](https://github.com/user/repo/releases/tag/v2.1.0) (2024-03-15)\n\n');
+	expect(result).toBe(
+		'## [2.1.0](https://github.com/user/repo/releases/tag/v2.1.0) (2024-03-15)\n\n'
+	);
 });
 
 it('handles single digit day and month', () => {
@@ -33,7 +35,9 @@ it('handles single digit day and month', () => {
 	const result = generateVersionHeader(version, versionLink);
 
 	// Assess
-	expect(result).toBe('## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-01-05)\n\n');
+	expect(result).toBe(
+		'## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-01-05)\n\n'
+	);
 });
 
 it('handles double digit day and month', () => {
@@ -46,19 +50,24 @@ it('handles double digit day and month', () => {
 	const result = generateVersionHeader(version, versionLink);
 
 	// Assess
-	expect(result).toBe('## [3.2.1](https://github.com/user/repo/releases/tag/v3.2.1) (2024-12-25)\n\n');
+	expect(result).toBe(
+		'## [3.2.1](https://github.com/user/repo/releases/tag/v3.2.1) (2024-12-25)\n\n'
+	);
 });
 
 it('handles prerelease versions', () => {
 	// Prepare
 	const version = '2.0.0-alpha.1';
-	const versionLink = 'https://github.com/user/repo/releases/tag/v2.0.0-alpha.1';
+	const versionLink =
+		'https://github.com/user/repo/releases/tag/v2.0.0-alpha.1';
 
 	// Act
 	const result = generateVersionHeader(version, versionLink);
 
 	// Assess
-	expect(result).toBe('## [2.0.0-alpha.1](https://github.com/user/repo/releases/tag/v2.0.0-alpha.1) (2024-03-15)\n\n');
+	expect(result).toBe(
+		'## [2.0.0-alpha.1](https://github.com/user/repo/releases/tag/v2.0.0-alpha.1) (2024-03-15)\n\n'
+	);
 });
 
 it('handles different version link formats', () => {
@@ -70,7 +79,9 @@ it('handles different version link formats', () => {
 	const result = generateVersionHeader(version, versionLink);
 
 	// Assess
-	expect(result).toBe('## [1.5.2](https://gitlab.com/user/repo/-/releases/1.5.2) (2024-03-15)\n\n');
+	expect(result).toBe(
+		'## [1.5.2](https://gitlab.com/user/repo/-/releases/1.5.2) (2024-03-15)\n\n'
+	);
 });
 
 it('handles empty version link', () => {
@@ -95,5 +106,7 @@ it('handles year boundary correctly', () => {
 	const result = generateVersionHeader(version, versionLink);
 
 	// Assess
-	expect(result).toBe('## [4.0.0](https://github.com/user/repo/releases/tag/v4.0.0) (2025-01-01)\n\n');
+	expect(result).toBe(
+		'## [4.0.0](https://github.com/user/repo/releases/tag/v4.0.0) (2025-01-01)\n\n'
+	);
 });

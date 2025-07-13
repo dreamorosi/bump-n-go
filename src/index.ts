@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { type SemVer, inc, parse } from 'semver';
+import { inc, parse, type SemVer } from 'semver';
 import { determineVersionBumpType } from './bump.js';
 import { updateChangelogs } from './changelog.js';
 import { parseCommits } from './commits.js';
 import { TypeHierarchy } from './constants.js';
 import { getCommitsSinceTag, getFirstCommit, getLastTag } from './git.js';
-import { loggerFactory } from './logger.js';
+import { configureLogger, logger } from './logger.js';
 import type { BumpType } from './types.js';
 import { bumpVersions } from './version.js';
 import { readWorkspaces } from './workspace.js';
@@ -20,14 +20,49 @@ process.removeAllListeners('warning').on('warning', (err) => {
 });
 /* c8 ignore stop */
 
+/**
+ * Main function that processes a repository for changelog generation and version bumping.
+ *
+ * Orchestrates the entire release process by:
+ * 1. Analyzing git history since the last tag (or all history if no tags exist)
+ * 2. Parsing conventional commits and mapping them to workspaces
+ * 3. Determining the appropriate semantic version bump
+ * 4. Generating changelogs for root and workspace-specific files
+ * 5. Updating package versions across all workspaces
+ *
+ * Supports both monorepos with multiple workspaces and single-package repositories.
+ * For single-package repos, treats the root package as the sole workspace.
+ *
+ * @param options - configuration options for the repository processing
+ * @param options.root - the root directory of the repository
+ * @param options.dryRun - when true, shows what would be done without making changes
+ * @param options.type - optional override for version bump type (major, minor, patch)
+ * @param options.verbose - enables detailed debug logging
+ *
+ * @example
+ * ```typescript
+ * // Process a monorepo
+ * await processMonorepo({
+ *   root: '/path/to/monorepo',
+ *   dryRun: false,
+ *   verbose: true
+ * });
+ * 
+ * // Process a single-package repo
+ * await processMonorepo({
+ *   root: '/path/to/single-package',
+ *   dryRun: true
+ * });
+ * ```
+ */
 const processMonorepo = async (options: {
 	root: string;
 	dryRun?: boolean;
 	type?: string;
 	verbose?: boolean;
-}) => {
+}): Promise<void> => {
 	const { root, dryRun = false, type, verbose = false } = options;
-	const logger = loggerFactory(verbose);
+	configureLogger(verbose);
 
 	if (type && !Object.keys(TypeHierarchy).includes(type)) {
 		logger.error(
@@ -88,7 +123,19 @@ const processMonorepo = async (options: {
 	}
 
 	// Parse current version and check if it's a prerelease
-	const currentVersion = parse(lastTag) || (parse('0.0.0') as SemVer);
+	let currentVersion: SemVer;
+	if (lastTag) {
+		// Use git tag version if available
+		currentVersion = parse(lastTag) as SemVer;
+	} else {
+		// Fall back to package.json version when no tags exist
+		const rootPkgPath = join(root, 'package.json');
+		const rootPkg = JSON.parse(readFileSync(rootPkgPath, 'utf-8'));
+		const pkgVersion = rootPkg.version || '0.0.0';
+		currentVersion = parse(pkgVersion) || (parse('0.0.0') as SemVer);
+		logger.debug(`Using package.json version as baseline: ${pkgVersion}`);
+	}
+	
 	const isPrerelease = currentVersion.prerelease.length > 0;
 
 	let newVersion: string | null;

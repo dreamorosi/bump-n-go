@@ -11,7 +11,11 @@ export default defineConfig({
 				lines: 100,
 			},
 			include: ['src/**'],
-			exclude: [...coverageConfigDefaults.exclude, 'src/types.ts'],
+			exclude: [
+				...coverageConfigDefaults.exclude,
+				'src/types.ts',
+				'src/cli.ts',
+			],
 		},
 		setupFiles: ['./tests/setupEnv.ts'],
 	},

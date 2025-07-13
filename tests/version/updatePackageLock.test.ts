@@ -1,6 +1,6 @@
-import { it, expect, beforeEach, vi } from 'vitest';
-import { bumpVersions } from '../../src/version.js';
+import { beforeEach, expect, it, vi } from 'vitest';
 import type { Workspace } from '../../src/types.js';
+import { bumpVersions } from '../../src/version.js';
 
 const mocks = vi.hoisted(() => ({
 	existsSync: vi.fn(),
@@ -151,10 +151,10 @@ it('skips non-existent package-lock.json', () => {
 	mocks.join
 		.mockReturnValueOnce('/test/packages/test-package/package.json')
 		.mockReturnValueOnce('/test/package-lock.json');
-	mocks.existsSync
-		.mockReturnValueOnce(true)
-		.mockReturnValueOnce(false);
-	mocks.readFileSync.mockReturnValueOnce('{"name":"test-package","version":"1.0.0"}');
+	mocks.existsSync.mockReturnValueOnce(true).mockReturnValueOnce(false);
+	mocks.readFileSync.mockReturnValueOnce(
+		'{"name":"test-package","version":"1.0.0"}'
+	);
 
 	// Act
 	bumpVersions('/test', workspaces, '2.0.0');

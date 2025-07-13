@@ -1,4 +1,4 @@
-import { it, expect } from 'vitest';
+import { expect, it } from 'vitest';
 import { isAllowedType } from '../../src/commits.js';
 
 it('returns true for allowed commit types', () => {
