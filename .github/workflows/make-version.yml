@@ -38,6 +38,11 @@ jobs:
           VERSION=$(cat package.json | jq .version -r)
           echo "Bumped version to $VERSION"
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Update version in lock file
+        run: |
+          VERSION=${{ steps.bump-version.outputs.RELEASE_VERSION }}
+          # update the version in package-lock.json (in two places: once in the top-level and once in the dependencies)
+          jq --arg version "$VERSION" '.version = $version | .packages."".version = $version' package-lock.json > package-lock.json.tmp && mv package-lock.json.tmp package-lock.json
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
