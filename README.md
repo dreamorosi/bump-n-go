@@ -84,15 +84,13 @@ The tool recognizes these conventional commit types:
 | ------------------------ | ------------ | ------------------------ |
 | `feat` / `feature`       | minor        | Features                 |
 | `fix`                    | patch        | Bug Fixes                |
-| `docs`                   | patch        | Documentation            |
-| `style`                  | patch        | Styles                   |
 | `refactor`               | patch        | Code Refactoring         |
 | `perf`                   | patch        | Performance Improvements |
-| `test`                   | patch        | Tests                    |
 | `chore`                  | patch        | Chores                   |
-| `ci`                     | patch        | Continuous Integration   |
 | `build`                  | patch        | Build System             |
 | `BREAKING CHANGE` or `!` | major        | BREAKING CHANGES         |
+
+**Note:** `ci`, `test`, `docs`, and `style` commits are excluded from version bumps and changelogs as they represent  work that doesn't affect end-user functionality.
 
 ### Commit Format
 

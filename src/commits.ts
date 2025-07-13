@@ -166,7 +166,7 @@ function getAffectedWorkspacesFromChangedFiles(
  * Processes conventional commits to extract metadata and determine which
  * workspaces are affected by each commit. Handles both direct workspace
  * commits (scoped to a specific package) and dependency updates. For
- * single-package repos (where root package is the only workspace), assigns 
+ * single-package repos (where root package is the only workspace), assigns
  * all valid commits to the root workspace.
  *
  * @param commits - array of raw commit data from git
@@ -192,11 +192,11 @@ const parseCommits = (
 	workspaceChanged: boolean;
 } => {
 	let workspaceChanged = false;
-	
+
 	// Check if this is a single-package repo (root package is the only workspace)
 	const workspaceEntries = Object.values(workspaces);
-	const isSinglePackageRepo = workspaceEntries.length === 1 && 
-		workspaceEntries[0]?.path === rootPath;
+	const isSinglePackageRepo =
+		workspaceEntries.length === 1 && workspaceEntries[0]?.path === rootPath;
 	const rootWorkspace = isSinglePackageRepo ? workspaceEntries[0] : null;
 
 	for (const commit of commits) {
@@ -204,6 +204,11 @@ const parseCommits = (
 		const { subject, type, scope, notes } = r;
 
 		if (!subject || !type || !isAllowedType(type)) {
+			continue;
+		}
+
+		// Skip types that don't affect end-user functionality
+		if (['ci', 'style', 'docs', 'test'].includes(type)) {
 			continue;
 		}
 
@@ -281,7 +286,9 @@ const parseCommits = (
 								type,
 								scope,
 								notes,
-								breaking: notes.some((note) => note.title === 'BREAKING CHANGE'),
+								breaking: notes.some(
+									(note) => note.title === 'BREAKING CHANGE'
+								),
 								hash: commit.hash,
 							});
 							workspaceChanged = true;

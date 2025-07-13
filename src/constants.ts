@@ -2,6 +2,7 @@
  * Maps conventional commit types to their corresponding semantic version bump type.
  *
  * Used to determine what type of version bump should be applied based on commit types.
+ * CI and build commits are excluded as they don't affect end-user functionality.
  */
 const ChangeTypeMapping = {
 	feat: 'minor',
@@ -22,6 +23,7 @@ const ChangeTypeMapping = {
  * Maps conventional commit types to their corresponding changelog section headers.
  *
  * Used when generating changelog sections to group commits under appropriate headings.
+ * CI and build commits are excluded as they don't affect end-user functionality.
  */
 const ChangeTypeHeaderMapping = {
 	feat: 'Features',

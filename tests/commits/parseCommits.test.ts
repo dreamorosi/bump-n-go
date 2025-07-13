@@ -421,3 +421,74 @@ it('handles empty commits array', () => {
 	expect(result.workspaces['workspace-a'].changed).toBe(false);
 	expect(result.workspaces['workspace-a'].commits).toHaveLength(0);
 });
+
+it("excludes commits that don''t affect end-user functionality", () => {
+	// Prepare
+	const commits: RawCommit[] = [
+		{
+			subject: 'feat: add new feature',
+			body: '',
+			hash: 'abc123',
+		},
+		{
+			subject: 'chore: update dependencies',
+			body: '',
+			hash: 'def456',
+		},
+		{
+			subject: 'ci: update GitHub Actions workflow',
+			body: '',
+			hash: 'def456',
+		},
+		{
+			subject: 'docs: update README',
+			body: '',
+			hash: 'ghi789',
+		},
+		{
+			subject: 'style: format code',
+			body: '',
+			hash: 'jkl012',
+		},
+		{
+			subject: 'test: add unit tests',
+			body: '',
+			hash: 'mno345',
+		},
+		{
+			subject: 'fix: resolve bug',
+			body: '',
+			hash: 'jkl012',
+		},
+	];
+	const workspaces: Record<string, Workspace> = {
+		'test-package': {
+			name: 'test-package',
+			shortName: 'test-package',
+			path: '/test',
+			version: '1.0.0',
+			changed: false,
+			commits: [],
+			dependencyNames: [],
+			isPrivate: false,
+		},
+	};
+
+	// Act
+	const result = parseCommits(commits, workspaces, '/test');
+
+	// Assess - only feat and fix commits should be included, ci and build should be excluded
+	expect(result.workspaceChanged).toBe(true);
+	expect(result.workspaces['test-package']?.commits).toHaveLength(3);
+	expect(result.workspaces['test-package']?.commits[0]?.type).toBe('feat');
+	expect(result.workspaces['test-package']?.commits[1]?.type).toBe('chore');
+	expect(result.workspaces['test-package']?.commits[2]?.type).toBe('fix');
+
+	// Verify CI and build commits are not included
+	const commitTypes =
+		result.workspaces['test-package']?.commits.map((c) => c.type) || [];
+	expect(commitTypes).not.toContain('ci');
+	expect(commitTypes).not.toContain('docs');
+	expect(commitTypes).not.toContain('style');
+	expect(commitTypes).not.toContain('test');
+});

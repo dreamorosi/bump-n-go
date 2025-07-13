@@ -293,6 +293,12 @@ const updateChangelogs = (
 
 	// Update workspace-specific changelogs
 	for (const workspace of Object.values(workspaces)) {
+		// Skip workspace changelog if it's the same as root (single-package repo)
+		const workspaceChangelogPath = join(workspace.path, 'CHANGELOG.md');
+		if (workspaceChangelogPath === rootChangelogPath) {
+			continue;
+		}
+
 		const workspaceSection = workspaceSections.get(workspace.shortName);
 		updateWorkspaceChangelog(
 			workspace.path,

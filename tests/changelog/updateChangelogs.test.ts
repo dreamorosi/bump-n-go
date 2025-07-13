@@ -58,8 +58,9 @@ it('updates both root and workspace changelogs', () => {
 
 	mocks.join
 		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
-		.mockReturnValueOnce('/test/packages/test-package/CHANGELOG.md'); // Workspace changelog
-	mocks.statSync.mockReturnValue({ isFile: () => true });
+		.mockReturnValueOnce('/test/packages/test-package/CHANGELOG.md') // Workspace path comparison
+		.mockReturnValueOnce('/test/packages/test-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog
+	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
 	mocks.readFileSync.mockReturnValue('# Changelog\n\n');
 
 	// Act
@@ -102,7 +103,7 @@ it('updates both root and workspace changelogs', () => {
 	}
 });
 
-it('excludes private packages from root changelog but includes in workspace changelogs', () => {
+it('excludes private packages from root changelog', () => {
 	// Prepare
 	const rootPath = '/test';
 	const publicWorkspace: Workspace = {
@@ -150,14 +151,23 @@ it('excludes private packages from root changelog but includes in workspace chan
 	const baseUrl = 'https://github.com/user/repo';
 
 	mocks.join
-		.mockReturnValueOnce('/test/CHANGELOG.md')
-		.mockReturnValueOnce('/test/packages/public-package/CHANGELOG.md')
-		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md');
-	mocks.statSync.mockReturnValue({ isFile: () => true });
-	mocks.readFileSync.mockReturnValue('# Changelog\n\n');
+		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
+		.mockReturnValueOnce('/test/packages/public-package/CHANGELOG.md') // Public workspace path comparison
+		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md') // Private workspace path comparison
+		.mockReturnValueOnce('/test/packages/public-package/CHANGELOG.md') // Inside updateWorkspaceChangelog for public
+		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog for private
+	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.readFileSync
+		.mockReturnValueOnce('# Changelog\n\n') // Root changelog parseExistingChangelogHeader
+		.mockReturnValueOnce('# Changelog\n\n') // Root changelog updateRootChangelog
+		.mockReturnValueOnce('# Changelog\n\n') // Public workspace parseExistingChangelogHeader
+		.mockReturnValueOnce('# Changelog\n\n') // Public workspace updateWorkspaceChangelog
+		.mockReturnValueOnce('# Changelog\n\n') // Private workspace parseExistingChangelogHeader  
+		.mockReturnValueOnce('# Changelog\n\n'); // Private workspace updateWorkspaceChangelog
 
 	// Act
 	updateChangelogs(rootPath, workspaces, version, versionLink, baseUrl);
+
 	// Check root changelog excludes private packages
 	const rootCall = mocks.writeFileSync.mock.calls.find(
 		(call) => call[0] === '/test/CHANGELOG.md'
@@ -169,8 +179,52 @@ it('excludes private packages from root changelog but includes in workspace chan
 	} else {
 		throw new Error('Root changelog call not found');
 	}
+});
 
-	// Check private workspace changelog is still updated
+it('includes private packages in their workspace changelogs', () => {
+	// Prepare - focus only on private workspace
+	const rootPath = '/test';
+	const privateWorkspace: Workspace = {
+		name: 'private-package',
+		shortName: 'private-package',
+		path: '/test/packages/private-package',
+		version: '1.0.0',
+		changed: true,
+		commits: [
+			{
+				subject: 'Private feature',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'abc123',
+			},
+		],
+		dependencyNames: [],
+		isPrivate: true,
+	};
+	const workspaces = {
+		'private-package': privateWorkspace,
+	};
+	const version = '1.0.0';
+	const versionLink = 'https://github.com/user/repo/releases/tag/v1.0.0';
+	const baseUrl = 'https://github.com/user/repo';
+
+	mocks.join
+		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
+		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md') // Private workspace path comparison
+		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog for private
+	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.readFileSync
+		.mockReturnValueOnce('# Changelog\n\n') // Root changelog parseExistingChangelogHeader
+		.mockReturnValueOnce('# Changelog\n\n') // Root changelog updateRootChangelog
+		.mockReturnValueOnce('# Changelog\n\n') // Private workspace parseExistingChangelogHeader  
+		.mockReturnValueOnce('# Changelog\n\n'); // Private workspace updateWorkspaceChangelog
+
+	// Act
+	updateChangelogs(rootPath, workspaces, version, versionLink, baseUrl);
+
+	// Check private workspace changelog includes private feature
 	const privateCall = mocks.writeFileSync.mock.calls.find(
 		(call) => call[0] === '/test/packages/private-package/CHANGELOG.md'
 	);
@@ -179,10 +233,6 @@ it('excludes private packages from root changelog but includes in workspace chan
 		expect(privateCall[1]).toContain('Private feature');
 	} else {
 		throw new Error('Private workspace changelog call not found');
-	}
-	expect(privateCall).toBeDefined();
-	if (privateCall) {
-		expect(privateCall[1]).toContain('Private feature');
 	}
 });
 
@@ -267,9 +317,11 @@ it('handles workspaces with no changes', () => {
 	const versionLink = 'https://github.com/user/repo/releases/tag/v1.0.0';
 	const baseUrl = 'https://github.com/user/repo';
 
-	mocks.join.mockReturnValueOnce('/test/CHANGELOG.md');
-	mocks.join.mockReturnValueOnce('/test/packages/unchanged-package/CHANGELOG.md');
-	mocks.statSync.mockReturnValueOnce({ isFile: () => true } as import('node:fs').Stats);
+	mocks.join
+		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
+		.mockReturnValueOnce('/test/packages/unchanged-package/CHANGELOG.md') // Workspace path comparison
+		.mockReturnValueOnce('/test/packages/unchanged-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog
+	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
 	mocks.readFileSync.mockReturnValueOnce('# Changelog\n\nExisting content\n');
 
 	// Act
@@ -299,6 +351,58 @@ it('handles workspaces with no changes', () => {
 		);
 	} else {
 		throw new Error('Workspace changelog call not found');
+	}
+});
+
+it('handles single-package repos without duplicating changelog', () => {
+	// Prepare - single package repo where workspace path equals root path
+	const rootPath = '/test';
+	const workspace: Workspace = {
+		name: 'single-package',
+		shortName: 'single-package',
+		path: '/test', // Same as root path
+		version: '1.0.0',
+		changed: true,
+		commits: [
+			{
+				subject: 'Add single package feature',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'abc1234',
+			},
+		],
+		dependencyNames: [],
+		isPrivate: false,
+	};
+	const workspaces = { 'single-package': workspace };
+	const version = '1.0.0';
+	const versionLink = 'https://github.com/user/repo/releases/tag/v1.0.0';
+	const baseUrl = 'https://github.com/user/repo';
+
+	mocks.join
+		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
+		.mockReturnValueOnce('/test/CHANGELOG.md'); // Workspace path comparison (same as root)
+	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.readFileSync
+		.mockReturnValueOnce('# Changelog\n\n') // Root changelog parseExistingChangelogHeader
+		.mockReturnValueOnce('# Changelog\n\n'); // Root changelog updateRootChangelog
+
+	// Act
+	updateChangelogs(rootPath, workspaces, version, versionLink, baseUrl);
+
+	// Assess - should only write once (root changelog), not twice
+	expect(mocks.writeFileSync).toHaveBeenCalledTimes(1);
+	
+	const rootCall = mocks.writeFileSync.mock.calls.find(
+		(call) => call[0] === '/test/CHANGELOG.md'
+	);
+	expect(rootCall).toBeDefined();
+	if (rootCall) {
+		expect(rootCall[1]).toContain('Add single package feature');
+	} else {
+		throw new Error('Root changelog call not found');
 	}
 });
 
