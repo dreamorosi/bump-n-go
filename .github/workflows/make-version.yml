@@ -38,6 +38,10 @@ jobs:
           VERSION=$(cat package.json | jq .version -r)
           echo "Bumped version to $VERSION"
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Stage changes
         run: git add .
       - name: Create PR
