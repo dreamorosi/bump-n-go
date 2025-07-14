@@ -5,11 +5,11 @@ import type { FilesystemMocks } from './mocks.js';
  * Asserts that a specific changelog file has been updated
  * with the expected content
  */
-export function expectChangelogUpdated(
+const expectChangelogUpdated = (
 	fsMocks: Pick<FilesystemMocks, 'writeFileSync'>,
 	changelogPath: string,
 	expectedPatterns: string[] = []
-): void {
+): void => {
 	// Find the write call for this changelog
 	const writeCall = fsMocks.writeFileSync.mock.calls.find(
 		(call) => call[0] === changelogPath
@@ -28,4 +28,6 @@ export function expectChangelogUpdated(
 	} else {
 		throw new Error(`No writeFileSync call found for path: ${changelogPath}`);
 	}
-}
+};
+
+export { expectChangelogUpdated };

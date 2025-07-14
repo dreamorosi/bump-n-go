@@ -23,9 +23,8 @@ const parser = new CommitParser({
  * @param type - the commit type to validate
  * @returns true if the type is allowed, false otherwise
  */
-function isAllowedType(type: string): type is keyof typeof ChangeTypeMapping {
-	return Object.keys(ChangeTypeMapping).includes(type);
-}
+const isAllowedType = (type: string): type is keyof typeof ChangeTypeMapping =>
+	Object.keys(ChangeTypeMapping).includes(type);
 
 /**
  * Determines if a commit is a Dependabot group commit.
@@ -37,9 +36,8 @@ function isAllowedType(type: string): type is keyof typeof ChangeTypeMapping {
  * @param scope - the commit scope
  * @returns true if this is a Dependabot group commit
  */
-function isDependabotGroupCommit(subject: string, scope: string): boolean {
-	return scope === 'deps' && /bump the .+ group/.test(subject);
-}
+const isDependabotGroupCommit = (subject: string, scope: string): boolean =>
+	scope === 'deps' && /bump the .+ group/.test(subject);
 
 /**
  * Determines if a commit is a version bump commit that should be excluded from changelogs.
@@ -51,9 +49,8 @@ function isDependabotGroupCommit(subject: string, scope: string): boolean {
  * @param subject - the commit subject line
  * @returns true if this is a version bump commit that should be excluded
  */
-function isVersionBumpCommit(type: string, subject: string): boolean {
-	return type === 'chore' && subject.trim().startsWith('bump version');
-}
+const isVersionBumpCommit = (type: string, subject: string): boolean =>
+	type === 'chore' && subject.trim().startsWith('bump version');
 
 /**
  * Analyzes a git diff to determine if production dependencies were changed.
@@ -64,7 +61,7 @@ function isVersionBumpCommit(type: string, subject: string): boolean {
  * @param diff - the git diff output to analyze
  * @returns true if production dependencies were modified
  */
-function hasProductionDependencyChanges(diff: string): boolean {
+const hasProductionDependencyChanges = (diff: string): boolean => {
 	// Look for changes in the "dependencies" section (not devDependencies)
 	// Git diff format: lines starting with + or - show additions/removals
 	// We need to check if any lines with + or - are within the "dependencies" section
@@ -117,7 +114,7 @@ function hasProductionDependencyChanges(diff: string): boolean {
 	}
 
 	return false;
-}
+};
 
 /**
  * Identifies workspaces affected by changes to package.json files.
@@ -132,12 +129,12 @@ function hasProductionDependencyChanges(diff: string): boolean {
  * @param commitHash - the commit hash for getting file diffs
  * @returns array of workspaces that had production dependency changes
  */
-function getAffectedWorkspacesFromChangedFiles(
+const getAffectedWorkspacesFromChangedFiles = (
 	changedFiles: string[],
 	workspaces: Record<string, Workspace>,
 	rootPath: string,
 	commitHash: string
-): Workspace[] {
+): Workspace[] => {
 	const affectedWorkspaces: Workspace[] = [];
 
 	// Filter for package.json files only
@@ -172,7 +169,7 @@ function getAffectedWorkspacesFromChangedFiles(
 	}
 
 	return affectedWorkspaces;
-}
+};
 
 /**
  * Parses raw commits and associates them with affected workspaces.
