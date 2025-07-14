@@ -48,6 +48,6 @@
 	},
 	"homepage": "https://github.com/dreamorosi/bump-n-go#readme",
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=23.0.0"
 	}
 }
