@@ -42,6 +42,20 @@ function isDependabotGroupCommit(subject: string, scope: string): boolean {
 }
 
 /**
+ * Determines if a commit is a version bump commit that should be excluded from changelogs.
+ *
+ * Version bump commits are typically generated as part of the release process
+ * and should not trigger additional version bumps or appear in changelogs.
+ *
+ * @param type - the commit type
+ * @param subject - the commit subject line
+ * @returns true if this is a version bump commit that should be excluded
+ */
+function isVersionBumpCommit(type: string, subject: string): boolean {
+	return type === 'chore' && subject.trim().startsWith('bump version');
+}
+
+/**
  * Analyzes a git diff to determine if production dependencies were changed.
  *
  * Parses the diff output to check if changes occurred within the "dependencies"
@@ -212,6 +226,11 @@ const parseCommits = (
 			continue;
 		}
 
+		// Skip version bump commits as they should not trigger additional version bumps
+		if (isVersionBumpCommit(type, subject)) {
+			continue;
+		}
+
 		// For single-package repos, assign all valid commits to the root workspace
 		if (isSinglePackageRepo && rootWorkspace) {
 			rootWorkspace.changed = true;
@@ -309,4 +328,5 @@ export {
 	isDependabotGroupCommit,
 	hasProductionDependencyChanges,
 	getAffectedWorkspacesFromChangedFiles,
+	isVersionBumpCommit,
 };
