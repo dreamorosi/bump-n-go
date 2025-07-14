@@ -353,3 +353,35 @@ it('uses directory name when package name is empty string', () => {
 	expect(result['empty-name'].name).toBe('');
 	expect(result['empty-name'].shortName).toBe('empty-name');
 });
+
+it('uses "root" as fallback when root package has no name', () => {
+	// Prepare
+	const root = '/test/root';
+
+	// Root package.json without name property
+	mocks.readFileSync.mockImplementationOnce((_path: string) =>
+		JSON.stringify({
+			version: '1.0.0',
+		})
+	);
+
+	// No workspaces defined, so it falls back to treating root as workspace
+	mocks.globSync.mockReturnValueOnce([]);
+
+	// Act
+	const result = readWorkspaces(root);
+
+	// Assess
+	expect(Object.keys(result)).toHaveLength(1);
+	expect(result).toHaveProperty('root'); // Should use 'root' as the key
+	expect(result.root).toEqual({
+		name: undefined,
+		shortName: 'root', // Should use 'root' as shortName
+		path: '/test/root',
+		version: '1.0.0',
+		changed: false,
+		commits: [],
+		dependencyNames: [],
+		isPrivate: false,
+	});
+});

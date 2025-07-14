@@ -249,10 +249,10 @@ it('handles dependabot group commits', () => {
 	mocks.relative.mockReturnValue('packages/workspace-a');
 	mocks.getFileDiff.mockReturnValue(`
 @@ -10,6 +10,7 @@
-   "dependencies": {
+  "dependencies": {
 +    "lodash": "^4.17.21",
-     "react": "^18.0.0"
-   }
+    "react": "^18.0.0"
+  }
 `);
 
 	// Act
@@ -491,4 +491,62 @@ it("excludes commits that don''t affect end-user functionality", () => {
 	expect(commitTypes).not.toContain('docs');
 	expect(commitTypes).not.toContain('style');
 	expect(commitTypes).not.toContain('test');
+});
+
+it('skips commits without scope in multi-package repos', () => {
+	// Prepare
+	const commits: RawCommit[] = [
+		{
+			hash: 'abc123',
+			subject: 'feat: add new feature with no scope',
+			body: 'This is a feature without scope',
+		},
+		{
+			hash: 'def456',
+			subject: 'fix(workspace-a): fix with scope',
+			body: 'This is a fix with scope',
+		},
+	];
+
+	// Create multiple workspaces to ensure this is a multi-package repo scenario
+	const workspace1: Workspace = {
+		name: 'workspace-a',
+		shortName: 'workspace-a',
+		path: '/test/packages/workspace-a',
+		version: '1.0.0',
+		changed: false,
+		commits: [],
+		dependencyNames: [],
+		isPrivate: false,
+	};
+	const workspace2: Workspace = {
+		name: 'workspace-b',
+		shortName: 'workspace-b',
+		path: '/test/packages/workspace-b',
+		version: '1.0.0',
+		changed: false,
+		commits: [],
+		dependencyNames: [],
+		isPrivate: false,
+	};
+	const workspaces = { 'workspace-a': workspace1, 'workspace-b': workspace2 };
+	const rootPath = '/test';
+
+	// Act
+	const result = parseCommits(commits, workspaces, rootPath);
+
+	// Assess
+	expect(result.workspaceChanged).toBe(true);
+	// Only the commit with scope should be processed
+	expect(result.workspaces['workspace-a'].changed).toBe(true);
+	expect(result.workspaces['workspace-a'].commits).toHaveLength(1);
+	expect(result.workspaces['workspace-a'].commits[0].subject).toBe(
+		'fix with scope'
+	);
+
+	// No workspace should have the scopeless commit
+	const allCommitSubjects = Object.values(result.workspaces)
+		.flatMap((w) => w.commits)
+		.map((c) => c.subject);
+	expect(allCommitSubjects).not.toContain('add new feature with no scope');
 });

@@ -60,7 +60,9 @@ it('updates both root and workspace changelogs', () => {
 		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
 		.mockReturnValueOnce('/test/packages/test-package/CHANGELOG.md') // Workspace path comparison
 		.mockReturnValueOnce('/test/packages/test-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog
-	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.statSync.mockReturnValue({
+		isFile: () => true,
+	} as import('node:fs').Stats);
 	mocks.readFileSync.mockReturnValue('# Changelog\n\n');
 
 	// Act
@@ -156,13 +158,15 @@ it('excludes private packages from root changelog', () => {
 		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md') // Private workspace path comparison
 		.mockReturnValueOnce('/test/packages/public-package/CHANGELOG.md') // Inside updateWorkspaceChangelog for public
 		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog for private
-	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.statSync.mockReturnValue({
+		isFile: () => true,
+	} as import('node:fs').Stats);
 	mocks.readFileSync
 		.mockReturnValueOnce('# Changelog\n\n') // Root changelog parseExistingChangelogHeader
 		.mockReturnValueOnce('# Changelog\n\n') // Root changelog updateRootChangelog
 		.mockReturnValueOnce('# Changelog\n\n') // Public workspace parseExistingChangelogHeader
 		.mockReturnValueOnce('# Changelog\n\n') // Public workspace updateWorkspaceChangelog
-		.mockReturnValueOnce('# Changelog\n\n') // Private workspace parseExistingChangelogHeader  
+		.mockReturnValueOnce('# Changelog\n\n') // Private workspace parseExistingChangelogHeader
 		.mockReturnValueOnce('# Changelog\n\n'); // Private workspace updateWorkspaceChangelog
 
 	// Act
@@ -214,11 +218,13 @@ it('includes private packages in their workspace changelogs', () => {
 		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
 		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md') // Private workspace path comparison
 		.mockReturnValueOnce('/test/packages/private-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog for private
-	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.statSync.mockReturnValue({
+		isFile: () => true,
+	} as import('node:fs').Stats);
 	mocks.readFileSync
 		.mockReturnValueOnce('# Changelog\n\n') // Root changelog parseExistingChangelogHeader
 		.mockReturnValueOnce('# Changelog\n\n') // Root changelog updateRootChangelog
-		.mockReturnValueOnce('# Changelog\n\n') // Private workspace parseExistingChangelogHeader  
+		.mockReturnValueOnce('# Changelog\n\n') // Private workspace parseExistingChangelogHeader
 		.mockReturnValueOnce('# Changelog\n\n'); // Private workspace updateWorkspaceChangelog
 
 	// Act
@@ -321,7 +327,9 @@ it('handles workspaces with no changes', () => {
 		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
 		.mockReturnValueOnce('/test/packages/unchanged-package/CHANGELOG.md') // Workspace path comparison
 		.mockReturnValueOnce('/test/packages/unchanged-package/CHANGELOG.md'); // Inside updateWorkspaceChangelog
-	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.statSync.mockReturnValue({
+		isFile: () => true,
+	} as import('node:fs').Stats);
 	mocks.readFileSync.mockReturnValueOnce('# Changelog\n\nExisting content\n');
 
 	// Act
@@ -384,7 +392,9 @@ it('handles single-package repos without duplicating changelog', () => {
 	mocks.join
 		.mockReturnValueOnce('/test/CHANGELOG.md') // Root changelog
 		.mockReturnValueOnce('/test/CHANGELOG.md'); // Workspace path comparison (same as root)
-	mocks.statSync.mockReturnValue({ isFile: () => true } as import('node:fs').Stats);
+	mocks.statSync.mockReturnValue({
+		isFile: () => true,
+	} as import('node:fs').Stats);
 	mocks.readFileSync
 		.mockReturnValueOnce('# Changelog\n\n') // Root changelog parseExistingChangelogHeader
 		.mockReturnValueOnce('# Changelog\n\n'); // Root changelog updateRootChangelog
@@ -394,7 +404,7 @@ it('handles single-package repos without duplicating changelog', () => {
 
 	// Assess - should only write once (root changelog), not twice
 	expect(mocks.writeFileSync).toHaveBeenCalledTimes(1);
-	
+
 	const rootCall = mocks.writeFileSync.mock.calls.find(
 		(call) => call[0] === '/test/CHANGELOG.md'
 	);

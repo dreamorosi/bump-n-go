@@ -47,7 +47,7 @@ process.removeAllListeners('warning').on('warning', (err) => {
  *   dryRun: false,
  *   verbose: true
  * });
- * 
+ *
  * // Process a single-package repo
  * await processMonorepo({
  *   root: '/path/to/single-package',
@@ -135,7 +135,7 @@ const processMonorepo = async (options: {
 		currentVersion = parse(pkgVersion) || (parse('0.0.0') as SemVer);
 		logger.debug(`Using package.json version as baseline: ${pkgVersion}`);
 	}
-	
+
 	const isPrerelease = currentVersion.prerelease.length > 0;
 
 	let newVersion: string | null;

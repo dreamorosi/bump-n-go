@@ -560,3 +560,52 @@ it('skips version bump when no workspace changes and no type provided', async ()
 	expect(mocks.bumpVersions).not.toHaveBeenCalled();
 });
 
+it('handles invalid version string in package.json by falling back to 0.0.0', async () => {
+	// Prepare
+	const options = {
+		root: '/test',
+		type: 'patch',
+		verbose: false,
+	};
+	const commits: RawCommit[] = [];
+	const workspaces: Record<string, Workspace> = {};
+
+	// No last tag, so it will fall back to package.json version
+	mocks.getLastTag.mockReturnValue(null);
+	mocks.getCommitsSinceTag.mockReturnValue(commits);
+	mocks.readWorkspaces.mockReturnValue(workspaces);
+	mocks.parseCommits.mockReturnValue({
+		workspaceChanged: true,
+		workspaces,
+	});
+	mocks.getFirstCommit.mockReturnValue('abc123');
+	mocks.join.mockReturnValue('/test/package.json');
+
+	// Package.json has an invalid version string
+	mocks.readFileSync.mockReturnValue(
+		JSON.stringify({
+			name: 'test-monorepo',
+			version: 'not-a-valid-semver',
+			repository: {
+				url: 'git+https://github.com/user/repo.git',
+			},
+		})
+	);
+
+	// Act
+	await processMonorepo(options);
+
+	// Assess
+	// Should parse the invalid version as null and fall back to 0.0.0, then increment to 0.0.1
+	expect(mocks.logger.debug).toHaveBeenCalledWith(
+		'Using package.json version as baseline: not-a-valid-semver'
+	);
+	expect(mocks.logger.info).toHaveBeenCalledWith('New version: 0.0.1');
+	expect(mocks.updateChangelogs).toHaveBeenCalledWith(
+		'/test',
+		workspaces,
+		'0.0.1',
+		'https://github.com/user/repo/compare/abc123...v0.0.1',
+		'https://github.com/user/repo'
+	);
+});
