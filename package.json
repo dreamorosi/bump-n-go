@@ -41,7 +41,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/dreamorosi/ship-it-cli.git"
+		"url": "https://github.com/dreamorosi/ship-it-cli.git"
 	},
 	"bugs": {
 		"url": "https://github.com/dreamorosi/ship-it-cli/issues"
