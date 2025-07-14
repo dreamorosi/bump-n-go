@@ -41,12 +41,12 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/dreamorosi/ship-it-cli.git"
+		"url": "git+https://github.com/dreamorosi/bump-n-go.git"
 	},
 	"bugs": {
-		"url": "https://github.com/dreamorosi/ship-it-cli/issues"
+		"url": "https://github.com/dreamorosi/bump-n-go/issues"
 	},
-	"homepage": "https://github.com/dreamorosi/ship-it-cli#readme",
+	"homepage": "https://github.com/dreamorosi/bump-n-go#readme",
 	"engines": {
 		"node": ">=22.0.0"
 	}
