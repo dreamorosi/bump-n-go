@@ -78,9 +78,17 @@ const main = async (): Promise<void> => {
 	}
 };
 
-// Execute the CLI if this file is run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-	await main();
+// Run the CLI
+const scriptPath = process.argv[1] || '';
+if (
+	import.meta.url.endsWith(scriptPath) ||
+	import.meta.url === `file://${scriptPath}` ||
+	scriptPath.endsWith('bump-n-go')
+) {
+	main().catch((error) => {
+		console.error('Unhandled error:', error);
+		process.exit(1);
+	});
 }
 
 export { cli, main };

@@ -2,15 +2,22 @@
 	"name": "bump-n-go",
 	"version": "0.2.0",
 	"bin": {
-		"bump-n-go": "./lib/cli.js"
+		"bump-n-go": "lib/cli.js"
 	},
+	"type": "module",
+	"exports": {
+		".": "./lib/index.js"
+	},
+	"files": [
+		"lib/**/*"
+	],
 	"scripts": {
 		"test": "vitest --run tests",
 		"test:unit": "vitest --run tests",
 		"test:unit:coverage": "vitest --run tests --coverage.enabled --coverage.thresholds.100 --coverage.include='src/**'",
 		"lint": "biome lint .",
 		"lint:fix": "biome check --write .",
-		"build": "tsc --build tsconfig.json"
+		"build": "tsc --build tsconfig.json && chmod +x lib/cli.js"
 	},
 	"keywords": [
 		"changelog",
@@ -33,7 +40,6 @@
 		"typescript": "^5.8.3",
 		"vitest": "^3.2.4"
 	},
-	"type": "module",
 	"dependencies": {
 		"conventional-commits-parser": "^6.2.0",
 		"meow": "^13.2.0",
