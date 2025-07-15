@@ -263,3 +263,110 @@ it('handles commits without hash', () => {
 	expect(result.mainSections).toContain('Add feature without hash');
 	expect(result.mainSections).not.toContain('commit/');
 });
+
+it('omits package name prefix in single-package repository', () => {
+	// Prepare
+	const workspace: Workspace = {
+		name: 'single-package',
+		shortName: 'single-package',
+		path: '/test/single-package',
+		version: '1.0.0',
+		changed: true,
+		commits: [
+			{
+				subject: 'Add new feature',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'abc1234',
+			},
+			{
+				subject: 'Fix bug',
+				type: 'fix',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'def5678',
+			},
+		],
+		dependencyNames: [],
+		isPrivate: false,
+	};
+	const workspaces = { 'single-package': workspace };
+	const baseUrl = 'https://github.com/user/repo';
+
+	// Act
+	const result = generateChangelogSections(workspaces, baseUrl);
+
+	// Assess
+	expect(result.mainSections).toContain('### Features');
+	expect(result.mainSections).toContain('### Bug Fixes');
+	expect(result.mainSections).toContain(
+		'- Add new feature ([abc1234](https://github.com/user/repo/commit/abc1234))'
+	);
+	expect(result.mainSections).toContain(
+		'- Fix bug ([def5678](https://github.com/user/repo/commit/def5678))'
+	);
+	expect(result.mainSections).not.toContain('**single-package**');
+});
+
+it('includes package name prefix in monorepo with multiple packages', () => {
+	// Prepare
+	const workspace1: Workspace = {
+		name: 'package-1',
+		shortName: 'package-1',
+		path: '/test/packages/package-1',
+		version: '1.0.0',
+		changed: true,
+		commits: [
+			{
+				subject: 'Add feature to package 1',
+				type: 'feat',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'abc1234',
+			},
+		],
+		dependencyNames: [],
+		isPrivate: false,
+	};
+	const workspace2: Workspace = {
+		name: 'package-2',
+		shortName: 'package-2',
+		path: '/test/packages/package-2',
+		version: '1.0.0',
+		changed: true,
+		commits: [
+			{
+				subject: 'Fix bug in package 2',
+				type: 'fix',
+				scope: 'core',
+				breaking: false,
+				notes: [],
+				hash: 'def5678',
+			},
+		],
+		dependencyNames: [],
+		isPrivate: false,
+	};
+	const workspaces = {
+		'package-1': workspace1,
+		'package-2': workspace2,
+	};
+	const baseUrl = 'https://github.com/user/repo';
+
+	// Act
+	const result = generateChangelogSections(workspaces, baseUrl);
+
+	// Assess
+	expect(result.mainSections).toContain('### Features');
+	expect(result.mainSections).toContain('### Bug Fixes');
+	expect(result.mainSections).toContain(
+		'- **package-1** Add feature to package 1 ([abc1234](https://github.com/user/repo/commit/abc1234))'
+	);
+	expect(result.mainSections).toContain(
+		'- **package-2** Fix bug in package 2 ([def5678](https://github.com/user/repo/commit/def5678))'
+	);
+});
