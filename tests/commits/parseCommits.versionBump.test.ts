@@ -45,21 +45,21 @@ describe('parseCommits with version bump commits', () => {
 
 		// The workspace should be changed
 		expect(result.workspaceChanged).toBe(true);
-		
+
 		// Get the processed workspace
 		const processedWorkspace = result.workspaces['test-pkg'];
-		
+
 		// There should only be two commits (feature and bugfix, not version bump)
 		expect(processedWorkspace.commits).toHaveLength(2);
-		
+
 		// Check commit types
-		const commitTypes = processedWorkspace.commits.map(c => c.type);
+		const commitTypes = processedWorkspace.commits.map((c) => c.type);
 		expect(commitTypes).toContain('feat');
 		expect(commitTypes).toContain('fix');
-		
+
 		// Version bump commit should not be included
-		const versionBumpCommit = processedWorkspace.commits.find(c => 
-			c.type === 'chore' && c.subject.startsWith('bump version')
+		const versionBumpCommit = processedWorkspace.commits.find(
+			(c) => c.type === 'chore' && c.subject.startsWith('bump version')
 		);
 		expect(versionBumpCommit).toBeUndefined();
 	});
@@ -96,13 +96,13 @@ describe('parseCommits with version bump commits', () => {
 
 		// The workspace should be changed
 		expect(result.workspaceChanged).toBe(true);
-		
+
 		// Get the processed workspace
 		const processedWorkspace = result.workspaces['root-pkg'];
-		
+
 		// There should only be one commit (feature, not version bump)
 		expect(processedWorkspace.commits).toHaveLength(1);
-		
+
 		// Check commit types
 		expect(processedWorkspace.commits[0].type).toBe('feat');
 	});

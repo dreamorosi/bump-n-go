@@ -3,6 +3,39 @@ import { join } from 'node:path';
 import type { Workspace } from './types.js';
 
 /**
+ * Detects the indentation style and trailing newline from original file content.
+ *
+ * Analyzes the original JSON file content to determine whether it uses tabs
+ * or spaces for indentation, how many spaces if using spaces, and whether
+ * there's a trailing newline.
+ *
+ * @param originalContent - the original file content as a string
+ * @returns object containing indent string and whether to add trailing newline
+ */
+const detectFormatting = (
+	originalContent: string
+): { indent: string; hasTrailingNewline: boolean } => {
+	// Check for trailing newline
+	const hasTrailingNewline = originalContent.endsWith('\n');
+
+	// Look for the first indented line to detect indentation style
+	const lines = originalContent.split('\n');
+	for (const line of lines) {
+		if (line.length > 0 && (line.startsWith('\t') || line.startsWith(' '))) {
+			// Found an indented line, analyze its indentation
+			const match = line.match(/^(\s+)/);
+			if (match?.[1]) {
+				const indent = match[1];
+				return { indent, hasTrailingNewline };
+			}
+		}
+	}
+
+	// Default to tabs with trailing newline if no indentation detected (fallback for unformatted JSON)
+	return { indent: '\t', hasTrailingNewline: true };
+};
+
+/**
  * Preserves version range operators when updating dependency versions.
  *
  * Extracts and maintains the semantic version range operator (^, ~, >=, etc.)
@@ -51,7 +84,11 @@ const updateWorkspacePackageJson = (
 	const pkgPath = join(workspace.path, 'package.json');
 	if (!existsSync(pkgPath)) return;
 
-	const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+	const originalContent = readFileSync(pkgPath, 'utf-8');
+	const pkg = JSON.parse(originalContent);
+
+	// Detect original formatting
+	const { indent, hasTrailingNewline } = detectFormatting(originalContent);
 
 	// Update the package version
 	pkg.version = newVersion;
@@ -86,8 +123,10 @@ const updateWorkspacePackageJson = (
 		}
 	}
 
-	// Write back with proper formatting
-	writeFileSync(pkgPath, `${JSON.stringify(pkg, null, '\t')}\n`, 'utf-8');
+	// Write back with preserved formatting
+	const jsonContent = JSON.stringify(pkg, null, indent);
+	const finalContent = hasTrailingNewline ? `${jsonContent}\n` : jsonContent;
+	writeFileSync(pkgPath, finalContent, 'utf-8');
 };
 
 /**
@@ -174,6 +213,7 @@ const bumpVersions = (
 
 export {
 	bumpVersions,
+	detectFormatting,
 	preserveVersionRange,
 	updateWorkspacePackageJson,
 	updatePackageLock,
