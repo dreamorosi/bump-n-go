@@ -1,9 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { updateWorkspacePackageJson } from '../../src/version.js';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Workspace } from '../../src/types.js';
+import { updateWorkspacePackageJson } from '../../src/version.js';
 
 describe('updateWorkspacePackageJson formatting preservation', () => {
 	let testDir: string;
@@ -13,7 +19,7 @@ describe('updateWorkspacePackageJson formatting preservation', () => {
 		// Create a temporary directory for testing
 		testDir = join(tmpdir(), `bump-n-go-test-${Date.now()}`);
 		mkdirSync(testDir, { recursive: true });
-		
+
 		workspace = {
 			name: 'test-package',
 			shortName: 'test-package',
@@ -47,11 +53,13 @@ describe('updateWorkspacePackageJson formatting preservation', () => {
 		writeFileSync(packageJsonPath, originalContent, 'utf-8');
 
 		// Update the package
-		updateWorkspacePackageJson(workspace, '2.0.0', { 'test-package': workspace });
+		updateWorkspacePackageJson(workspace, '2.0.0', {
+			'test-package': workspace,
+		});
 
 		// Read the result
 		const result = readFileSync(packageJsonPath, 'utf-8');
-		
+
 		// Should preserve tab indentation and trailing newline
 		expect(result).toMatch(/^\{$/m);
 		expect(result).toMatch(/^\t"name": "test-package",$/m);
@@ -77,18 +85,20 @@ describe('updateWorkspacePackageJson formatting preservation', () => {
 		writeFileSync(packageJsonPath, originalContent, 'utf-8');
 
 		// Update the package
-		updateWorkspacePackageJson(workspace, '2.0.0', { 'test-package': workspace });
+		updateWorkspacePackageJson(workspace, '2.0.0', {
+			'test-package': workspace,
+		});
 
 		// Read the result
 		const result = readFileSync(packageJsonPath, 'utf-8');
-		
+
 		// Should preserve 2-space indentation and trailing newline
 		expect(result).toMatch(/^\{$/m);
-		expect(result).toMatch(/^  "name": "test-package",$/m);
-		expect(result).toMatch(/^  "version": "2.0.0",$/m);
-		expect(result).toMatch(/^  "dependencies": \{$/m);
-		expect(result).toMatch(/^    "lodash": "\^4.0.0"$/m);
-		expect(result).toMatch(/^  \}$/m);
+		expect(result).toMatch(/^ {2}"name": "test-package",$/m);
+		expect(result).toMatch(/^ {2}"version": "2.0.0",$/m);
+		expect(result).toMatch(/^ {2}"dependencies": \{$/m);
+		expect(result).toMatch(/^ {4}"lodash": "\^4.0.0"$/m);
+		expect(result).toMatch(/^ {2}\}$/m);
 		expect(result).toMatch(/^\}$/m);
 		expect(result.endsWith('\n')).toBe(true);
 	});
@@ -106,18 +116,20 @@ describe('updateWorkspacePackageJson formatting preservation', () => {
 		writeFileSync(packageJsonPath, originalContent, 'utf-8');
 
 		// Update the package
-		updateWorkspacePackageJson(workspace, '2.0.0', { 'test-package': workspace });
+		updateWorkspacePackageJson(workspace, '2.0.0', {
+			'test-package': workspace,
+		});
 
 		// Read the result
 		const result = readFileSync(packageJsonPath, 'utf-8');
-		
+
 		// Should preserve 4-space indentation and no trailing newline
 		expect(result).toMatch(/^\{$/m);
-		expect(result).toMatch(/^    "name": "test-package",$/m);
-		expect(result).toMatch(/^    "version": "2.0.0",$/m);
-		expect(result).toMatch(/^    "dependencies": \{$/m);
-		expect(result).toMatch(/^        "lodash": "\^4.0.0"$/m);
-		expect(result).toMatch(/^    \}$/m);
+		expect(result).toMatch(/^ {4}"name": "test-package",$/m);
+		expect(result).toMatch(/^ {4}"version": "2.0.0",$/m);
+		expect(result).toMatch(/^ {4}"dependencies": \{$/m);
+		expect(result).toMatch(/^ {8}"lodash": "\^4.0.0"$/m);
+		expect(result).toMatch(/^ {4}\}$/m);
 		expect(result).toMatch(/^\}$/m);
 		expect(result.endsWith('\n')).toBe(false);
 	});
@@ -132,11 +144,13 @@ describe('updateWorkspacePackageJson formatting preservation', () => {
 		writeFileSync(packageJsonPath, originalContent, 'utf-8');
 
 		// Update the package
-		updateWorkspacePackageJson(workspace, '2.0.0', { 'test-package': workspace });
+		updateWorkspacePackageJson(workspace, '2.0.0', {
+			'test-package': workspace,
+		});
 
 		// Read the result
 		const result = readFileSync(packageJsonPath, 'utf-8');
-		
+
 		// Should preserve tab indentation and no trailing newline
 		expect(result).toMatch(/^\{$/m);
 		expect(result).toMatch(/^\t"name": "test-package",$/m);
@@ -160,7 +174,7 @@ describe('updateWorkspacePackageJson formatting preservation', () => {
 
 		const workspace2Dir = join(tmpdir(), `bump-n-go-test-2-${Date.now()}`);
 		mkdirSync(workspace2Dir, { recursive: true });
-		
+
 		const workspace2 = {
 			name: 'package-b',
 			shortName: 'package-b',
@@ -186,17 +200,20 @@ describe('updateWorkspacePackageJson formatting preservation', () => {
 		writeFileSync(packageJsonPath, originalContent, 'utf-8');
 
 		// Update the package
-		updateWorkspacePackageJson(workspace1, '2.0.0', { 'package-a': workspace1, 'package-b': workspace2 });
+		updateWorkspacePackageJson(workspace1, '2.0.0', {
+			'package-a': workspace1,
+			'package-b': workspace2,
+		});
 
 		// Read the result
 		const result = readFileSync(packageJsonPath, 'utf-8');
-		
+
 		// Should preserve 2-space indentation, update version and workspace dependency
-		expect(result).toMatch(/^  "name": "package-a",$/m);
-		expect(result).toMatch(/^  "version": "2.0.0",$/m);
-		expect(result).toMatch(/^  "dependencies": \{$/m);
-		expect(result).toMatch(/^    "package-b": "\^2.0.0",$/m);
-		expect(result).toMatch(/^    "lodash": "\^4.0.0"$/m);
+		expect(result).toMatch(/^ {2}"name": "package-a",$/m);
+		expect(result).toMatch(/^ {2}"version": "2.0.0",$/m);
+		expect(result).toMatch(/^ {2}"dependencies": \{$/m);
+		expect(result).toMatch(/^ {4}"package-b": "\^2.0.0",$/m);
+		expect(result).toMatch(/^ {4}"lodash": "\^4.0.0"$/m);
 		expect(result.endsWith('\n')).toBe(true);
 
 		// Clean up

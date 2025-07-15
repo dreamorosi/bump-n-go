@@ -18,7 +18,10 @@ describe('isVersionBumpCommit', () => {
 		{ type: 'chore', subject: 'bumping version' }, // different form
 		{ type: 'chore', subject: 'version bump' }, // reversed wording
 		{ type: 'chore', subject: 'other change' },
-	])('rejects non-version bump commits: $type $subject', ({ type, subject }) => {
-		expect(isVersionBumpCommit(type, subject)).toBe(false);
-	});
+	])(
+		'rejects non-version bump commits: $type $subject',
+		({ type, subject }) => {
+			expect(isVersionBumpCommit(type, subject)).toBe(false);
+		}
+	);
 });

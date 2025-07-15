@@ -57,7 +57,7 @@ const linkifyCommitReferences = (
  * Processes all workspace commits to create structured changelog content
  * organized by commit type. Generates both main changelog sections (excluding
  * private packages) and workspace-specific sections (including all packages).
- * 
+ *
  * For single-package repositories, omits package name prefixes from changelog
  * entries to reduce redundancy. For monorepos, includes package name prefixes
  * for clarity.
@@ -93,16 +93,14 @@ const generateChangelogSections = (
 				if (!linesSectionsByType.has(sectionHeader)) {
 					linesSectionsByType.set(sectionHeader, []);
 				}
-				
+
 				// For single-package repos, omit package name prefix
 				// For monorepos, include package name prefix for clarity
 				const changelogEntry = isSinglePackageRepo
 					? `- ${linkedSubject}`
 					: `- **${workspace.shortName}** ${linkedSubject}`;
-				
-				linesSectionsByType
-					.get(sectionHeader)
-					?.push(changelogEntry);
+
+				linesSectionsByType.get(sectionHeader)?.push(changelogEntry);
 			}
 
 			// Track sections by workspace for workspace-specific changelogs (all packages)

@@ -12,23 +12,25 @@ import type { Workspace } from './types.js';
  * @param originalContent - the original file content as a string
  * @returns object containing indent string and whether to add trailing newline
  */
-const detectFormatting = (originalContent: string): { indent: string; hasTrailingNewline: boolean } => {
+const detectFormatting = (
+	originalContent: string
+): { indent: string; hasTrailingNewline: boolean } => {
 	// Check for trailing newline
 	const hasTrailingNewline = originalContent.endsWith('\n');
-	
+
 	// Look for the first indented line to detect indentation style
 	const lines = originalContent.split('\n');
 	for (const line of lines) {
 		if (line.length > 0 && (line.startsWith('\t') || line.startsWith(' '))) {
 			// Found an indented line, analyze its indentation
 			const match = line.match(/^(\s+)/);
-			if (match && match[1]) {
+			if (match?.[1]) {
 				const indent = match[1];
 				return { indent, hasTrailingNewline };
 			}
 		}
 	}
-	
+
 	// Default to tabs with trailing newline if no indentation detected (fallback for unformatted JSON)
 	return { indent: '\t', hasTrailingNewline: true };
 };
