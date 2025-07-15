@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/dreamorosi/bump-n-go/compare/v0.2.0...v0.2.1) (2025-07-15)
+
+### Bug Fixes
+
+- unable to run globally ([a70a625](https://github.com/dreamorosi/bump-n-go/commit/a70a6252ea1fc5d3b577f7e7082ee04d92f7f67c))
+
+
 ## [0.2.0](https://github.com/dreamorosi/bump-n-go/compare/v0.1.0...v0.2.0) (2025-07-15)
 
 ### Bug Fixes
