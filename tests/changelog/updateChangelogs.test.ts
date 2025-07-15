@@ -81,9 +81,11 @@ it('updates both root and workspace changelogs', () => {
 			'## [1.0.0](https://github.com/user/repo/releases/tag/v1.0.0) (2024-03-15)'
 		);
 		expect(rootCall[1]).toContain('### Features');
+		// In a single-package repository, package name prefix should be omitted
 		expect(rootCall[1]).toContain(
-			'**test-package** Add new feature ([abc1234](https://github.com/user/repo/commit/abc1234))'
+			'- Add new feature ([abc1234](https://github.com/user/repo/commit/abc1234))'
 		);
+		expect(rootCall[1]).not.toContain('**test-package**');
 	} else {
 		throw new Error('Root changelog call not found');
 	}
@@ -180,6 +182,8 @@ it('excludes private packages from root changelog', () => {
 		expect(rootCall[1]).toContain('Public feature');
 		expect(rootCall[1]).not.toContain('Private feature');
 		expect(rootCall[1]).not.toContain('private-package');
+		// In a monorepo with multiple packages, package name prefix should be included
+		expect(rootCall[1]).toContain('**public-package**');
 	} else {
 		throw new Error('Root changelog call not found');
 	}
