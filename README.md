@@ -13,6 +13,7 @@ An opinionated changelog generator and versioning tool for both monorepos and si
 - 📝 **Individual Changelogs** - Generate workspace-specific changelog files
 - 🔧 **Package Version Bumping** - Update all package.json files consistently
 - 🏁 **No Tags Required** - Works from first commit when no git tags exist
+- 🤖 **GitHub Actions Integration** - Sets output variable with new version in GitHub workflows
 
 ## Installation
 
@@ -39,6 +40,33 @@ npx bump-n-go --type minor
 
 # Enable verbose logging
 npx bump-n-go --verbose
+```
+
+### GitHub Actions Integration
+
+When running in GitHub Actions workflows, the tool automatically sets an output variable with the new version:
+
+```yaml
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+          
+      - name: Bump version
+        id: bump
+        run: npx bump-n-go
+        
+      # Access the new version in subsequent steps
+      - name: Create Release
+        run: echo "Creating release for version ${{ steps.bump.outputs.new_version }}"
 ```
 
 ### Example Output

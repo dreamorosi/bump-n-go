@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inc, parse, type SemVer } from 'semver';
 import { determineVersionBumpType } from './bump.js';
@@ -163,6 +163,10 @@ const processMonorepo = async (options: {
 	}
 	/* c8 ignore stop */
 	logger.info(`New version: ${newVersion}`);
+
+	if (process.env.GITHUB_OUTPUT) {
+		appendFileSync(process.env.GITHUB_OUTPUT, `new_version=${newVersion}\n`);
+	}
 
 	if (dryRun) {
 		logger.info('Dry run enabled, no changes will be made');
