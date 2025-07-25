@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/dreamorosi/bump-n-go/compare/v0.2.1...v0.3.0) (2025-07-25)
+
+### Features
+
+- set new_version to `GITHUB_OUTPUT` ([#18](https://github.com/dreamorosi/bump-n-go/issues/18)) ([5c24abb](https://github.com/dreamorosi/bump-n-go/commit/5c24abb909a13b138318a31a04ff58a6ac55826b))
+
+
 ## [0.2.1](https://github.com/dreamorosi/bump-n-go/compare/v0.2.0...v0.2.1) (2025-07-15)
 
 ### Bug Fixes
