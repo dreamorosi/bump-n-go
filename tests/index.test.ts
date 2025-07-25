@@ -1,9 +1,10 @@
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { processMonorepo } from '../src/index.js';
 import type { RawCommit, Workspace } from '../src/types.js';
 
 const mocks = vi.hoisted(() => ({
 	readFileSync: vi.fn(),
+	appendFileSync: vi.fn(),
 	join: vi.fn(),
 	getLastTag: vi.fn(),
 	getCommitsSinceTag: vi.fn(),
@@ -24,6 +25,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('node:fs', () => ({
 	readFileSync: mocks.readFileSync,
+	appendFileSync: mocks.appendFileSync,
 }));
 
 vi.mock('node:path', () => ({
@@ -63,6 +65,11 @@ vi.mock('../src/logger.js', () => ({
 
 beforeEach(() => {
 	vi.clearAllMocks();
+});
+
+afterEach(() => {
+	// Clear any environment variables set during tests
+	delete process.env.GITHUB_OUTPUT;
 });
 
 it('returns early for invalid version bump type', async () => {
@@ -558,6 +565,45 @@ it('skips version bump when no workspace changes and no type provided', async ()
 	);
 	expect(mocks.updateChangelogs).not.toHaveBeenCalled();
 	expect(mocks.bumpVersions).not.toHaveBeenCalled();
+});
+
+it('writes to GITHUB_OUTPUT when environment variable is set', async () => {
+	// Prepare
+	const options = {
+		root: '/test',
+		type: 'patch',
+		verbose: false,
+	};
+	const commits: RawCommit[] = [];
+	const workspaces: Record<string, Workspace> = {};
+	process.env.GITHUB_OUTPUT = '/path/to/github/output';
+
+	mocks.getLastTag.mockReturnValue('v1.0.0');
+	mocks.getCommitsSinceTag.mockReturnValue(commits);
+	mocks.readWorkspaces.mockReturnValue(workspaces);
+	mocks.parseCommits.mockReturnValue({
+		workspaceChanged: true,
+		workspaces,
+	});
+	mocks.join.mockReturnValue('/test/package.json');
+	mocks.readFileSync.mockReturnValue(
+		JSON.stringify({
+			name: 'test-monorepo',
+			repository: {
+				url: 'git+https://github.com/user/repo.git',
+			},
+		})
+	);
+
+	// Act
+	await processMonorepo(options);
+
+	// Assess
+	expect(mocks.appendFileSync).toHaveBeenCalledWith(
+		'/path/to/github/output',
+		'new_version=1.0.1\n'
+	);
+	expect(mocks.logger.info).toHaveBeenCalledWith('New version: 1.0.1');
 });
 
 it('handles invalid version string in package.json by falling back to 0.0.0', async () => {
