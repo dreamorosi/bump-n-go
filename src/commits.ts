@@ -172,6 +172,33 @@ const getAffectedWorkspacesFromChangedFiles = (
 };
 
 /**
+ * Finds the workspace a commit scope refers to.
+ *
+ * A scope matches a workspace by its short name (the package name without
+ * its npm scope), or by the name of its directory. The directory match lets
+ * a package published as `@scope/tool-plugin` from `packages/plugin` be
+ * referred to as `feat(plugin): ...`. A short name match always wins.
+ *
+ * @param scope - the commit scope
+ * @param workspaces - record of all workspaces keyed by short name
+ * @returns the matching workspace, if any
+ *
+ * @example
+ * ```typescript
+ * findWorkspaceForScope('plugin', workspaces);
+ * // Returns the workspace at packages/plugin, named @scope/tool-plugin
+ * ```
+ */
+const findWorkspaceForScope = (
+	scope: string,
+	workspaces: Record<string, Workspace>
+): Workspace | undefined =>
+	workspaces[scope] ??
+	Object.values(workspaces).find(
+		(workspace) => workspace.path.split(/[\\/]/).filter(Boolean).pop() === scope
+	);
+
+/**
  * Parses raw commits and associates them with affected workspaces.
  *
  * Processes conventional commits to extract metadata and determine which
@@ -249,7 +276,7 @@ const parseCommits = (
 		}
 
 		// Find matching package for scoped commits
-		const pkg = workspaces[scope];
+		const pkg = findWorkspaceForScope(scope, workspaces);
 		if (pkg) {
 			pkg.changed = true;
 			pkg.commits.push({
@@ -321,6 +348,7 @@ const parseCommits = (
 
 export {
 	parseCommits,
+	findWorkspaceForScope,
 	isAllowedType,
 	isDependabotGroupCommit,
 	hasProductionDependencyChanges,

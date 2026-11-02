@@ -166,6 +166,10 @@ Or with object format:
 }
 ```
 
+pnpm reads its workspaces from `pnpm-workspace.yaml`. Add the same globs to `workspaces` in the root `package.json` too, so bump-n-go can find them; pnpm ignores the field.
+
+In a monorepo, a commit belongs to the workspace its scope names. The scope can be the package name without its npm scope (`tool-plugin` for `@scope/tool-plugin`) or the workspace's directory name (`plugin` for `packages/plugin`). Commits without a scope, or with a scope that matches no workspace, don't appear in changelogs.
+
 ### Single-Package Repositories
 
 For single-package repositories, no special configuration is needed. The tool will automatically treat the root package as the sole workspace and process all commits accordingly.
@@ -203,7 +207,9 @@ Intra-project dependencies are updated while preserving version range operators:
 - `^1.0.0` → `^2.1.0`
 - `~1.0.0` → `~2.1.0`
 - `>=1.0.0` → `>=2.1.0`
-- `file:../path` → unchanged (local file references preserved)
+- `file:../path`, `workspace:*`, `catalog:`, `link:`, `portal:`, `npm:` and other protocol specifiers → unchanged (the package manager resolves them)
+
+A package without a `version` field gets one right after `name`.
 
 ### Private Packages
 

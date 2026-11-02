@@ -65,6 +65,43 @@ const preserveVersionRange = (
 };
 
 /**
+ * Checks whether a dependency specifier uses a protocol rather than a
+ * version range, such as `workspace:*`, `catalog:`, `file:../x`, `link:`,
+ * `portal:`, `npm:other@1` or a git URL. Version ranges never contain a
+ * protocol, so these are left for the package manager to resolve.
+ *
+ * @param specifier - the dependency specifier from package.json
+ * @returns true when the specifier starts with a protocol
+ *
+ * @example
+ * ```typescript
+ * isProtocolSpecifier('workspace:*'); // true
+ * isProtocolSpecifier('^1.2.0'); // false
+ * ```
+ */
+const isProtocolSpecifier = (specifier: string): boolean =>
+	/^[a-z][a-z0-9+.-]*:/i.test(specifier);
+
+/**
+ * Returns a copy of a package.json object with a `version` field placed
+ * right after `name`, where npm puts it, instead of at the end.
+ *
+ * @param pkg - the parsed package.json
+ * @returns the same fields, with `version` after `name`
+ */
+const withVersionAfterName = (
+	pkg: Record<string, unknown>
+): Record<string, unknown> => {
+	if (!('name' in pkg)) return { version: undefined, ...pkg };
+	const ordered: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(pkg)) {
+		ordered[key] = value;
+		if (key === 'name') ordered.version = undefined;
+	}
+	return ordered;
+};
+
+/**
  * Updates a workspace's package.json file with new version and dependency versions.
  *
  * Updates the package version and any intra-project dependencies to maintain
@@ -90,8 +127,9 @@ const updateWorkspacePackageJson = (
 	// Detect original formatting
 	const { indent, hasTrailingNewline } = detectFormatting(originalContent);
 
-	// Update the package version
-	pkg.version = newVersion;
+	// Update the package version, adding it after the name if it was missing
+	const versioned = 'version' in pkg ? pkg : withVersionAfterName(pkg);
+	versioned.version = newVersion;
 
 	// Update intra-project dependencies
 	const dependencyTypes = [
@@ -101,13 +139,14 @@ const updateWorkspacePackageJson = (
 	] as const;
 
 	for (const depType of dependencyTypes) {
-		if (!pkg[depType]) continue;
+		if (!versioned[depType]) continue;
 
-		for (const [depName, currentRange] of Object.entries(pkg[depType])) {
-			// Skip file: dependencies (local file references)
+		for (const [depName, currentRange] of Object.entries(versioned[depType])) {
+			// Skip protocol specifiers (workspace:, catalog:, file:, link:, npm:, ...).
+			// They aren't version ranges, and the package manager resolves them.
 			if (
 				typeof currentRange === 'string' &&
-				currentRange.startsWith('file:')
+				isProtocolSpecifier(currentRange)
 			) {
 				continue;
 			}
@@ -118,13 +157,16 @@ const updateWorkspacePackageJson = (
 			);
 
 			if (matchingWorkspace && typeof currentRange === 'string') {
-				pkg[depType][depName] = preserveVersionRange(currentRange, newVersion);
+				versioned[depType][depName] = preserveVersionRange(
+					currentRange,
+					newVersion
+				);
 			}
 		}
 	}
 
 	// Write back with preserved formatting
-	const jsonContent = JSON.stringify(pkg, null, indent);
+	const jsonContent = JSON.stringify(versioned, null, indent);
 	const finalContent = hasTrailingNewline ? `${jsonContent}\n` : jsonContent;
 	writeFileSync(pkgPath, finalContent, 'utf-8');
 };
@@ -214,6 +256,8 @@ const bumpVersions = (
 export {
 	bumpVersions,
 	detectFormatting,
+	isProtocolSpecifier,
+	withVersionAfterName,
 	preserveVersionRange,
 	updateWorkspacePackageJson,
 	updatePackageLock,
