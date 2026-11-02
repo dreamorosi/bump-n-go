@@ -4,7 +4,7 @@ name: Make Release
 #
 # === Automated activities ===
 # 1. [Quality check] run unit tests and linting
-# 2. [Release] publish package to npmjs.org using the latest git commit, ensure provenance with NPM_CONFIG_PROVENANCE=true
+# 2. [Release] publish package to npmjs.org using the latest git commit, with npm trusted publishing (OIDC) and provenance
 # 3. [Create tag] create a new git tag using released version, i.e. v1.13.1
 #
 # === Manual activities ===
@@ -31,8 +31,10 @@ jobs:
   # It also sets the RELEASE_VERSION output to be used by the next job to create a git tag.
   publish-npm:
     needs: [run-unit-tests]
-    # Needed as recommended by npm docs on publishing with provenance https://docs.npmjs.com/generating-provenance-statements
+    # Trusted publishing and provenance both use the OIDC token:
+    # https://docs.npmjs.com/trusted-publishers
     permissions:
+      contents: read
       id-token: write
     environment: Release
     runs-on: ubuntu-latest
@@ -48,16 +50,17 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
-      - name: Setup auth tokens
-        run: |
-          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+          registry-url: "https://registry.npmjs.org"
       - name: Setup dependencies
         uses: aws-powertools/actions/.github/actions/cached-node-modules@29979bc5339bf54f76a11ac36ff67701986bb0f0
         with:
           nodeVersion: "24"
       - name: Publish to npm
-        run: |
-          NPM_CONFIG_PROVENANCE=true npm publish
+        # npm trusted publishing (OIDC): no token. On npmjs.com the package
+        # must trust this repository, this workflow file (make-release.yml)
+        # and the "Release" environment. Needs npm 11.5.1 or later, which
+        # Node.js 24 ships.
+        run: npm publish --provenance
       - name: Set release version
         id: set-release-version
         run: |
