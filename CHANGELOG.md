@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/dreamorosi/bump-n-go/compare/v0.3.0...v0.3.1) (2026-11-02)
+
+### Bug Fixes
+
+- support pnpm workspaces and directory-named commit scopes ([#20](https://github.com/dreamorosi/bump-n-go/issues/20)) ([57fc143](https://github.com/dreamorosi/bump-n-go/commit/57fc143b89723a6858ac5618ec63381c82d18df7))
+
+
 ## [0.3.0](https://github.com/dreamorosi/bump-n-go/compare/v0.2.1...v0.3.0) (2025-07-25)
 
 ### Features
