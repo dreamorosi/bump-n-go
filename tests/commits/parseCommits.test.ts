@@ -550,3 +550,38 @@ it('skips commits without scope in multi-package repos', () => {
 		.map((c) => c.subject);
 	expect(allCommitSubjects).not.toContain('add new feature with no scope');
 });
+
+it('assigns a commit whose scope is the directory name of a scoped package', () => {
+	// Prepare
+	const commits: RawCommit[] = [
+		{
+			hash: 'abc123',
+			subject: 'feat(opencode): add the plugin',
+			body: '',
+		},
+	];
+	const plugin: Workspace = {
+		name: '@scope/agent-timekeeper-opencode',
+		shortName: 'agent-timekeeper-opencode',
+		path: '/test/packages/opencode',
+		version: '0.0.0',
+		changed: false,
+		commits: [],
+		dependencyNames: [],
+		isPrivate: false,
+	};
+
+	// Act
+	const result = parseCommits(
+		commits,
+		{ 'agent-timekeeper-opencode': plugin },
+		'/test'
+	);
+
+	// Assess
+	expect(result.workspaceChanged).toBe(true);
+	expect(plugin.changed).toBe(true);
+	expect(plugin.commits.map((commit) => commit.subject)).toEqual([
+		'add the plugin',
+	]);
+});
